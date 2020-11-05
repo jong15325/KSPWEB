@@ -1,0 +1,421 @@
+package service;
+
+import java.util.HashMap;
+import java.util.List;
+
+import javax.servlet.http.HttpSession;
+
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
+
+import api.CardInfoManager;
+import api.UserCardImgManager;
+import api.UserImgManager;
+import dao.UserShopDAO;
+import dto.BankDTO;
+import dto.UserCardDTO;
+import dto.UserDTO;
+import dto.UserGameActiveDTO;
+import dto.UserShopDTO;
+import dto.UserShopPageDTO;
+
+public class UserShopServiceImp implements UserShopService {
+
+	private UserShopDAO dao;
+
+	public void setDao(UserShopDAO dao) {
+		this.dao = dao;
+	}
+
+	public UserShopServiceImp() {
+
+	}
+
+	@Override
+	public List<UserShopDTO> userShopAllListService(UserShopPageDTO userShopPageDto) {
+		// TODO Auto-generated method stub
+		List<UserShopDTO> aList = dao.userShopAllList(userShopPageDto);
+		for (UserShopDTO dto : aList) {
+			CardInfoManager cim = new CardInfoManager();
+			UserCardImgManager UCIM = new UserCardImgManager();
+			UserImgManager UIM = new UserImgManager();
+			dto.setCard_type_info(cim.cardTypeInfo(dto.getCard_type(), true));
+			dto.setCard_name_info(cim.cardNameInfo(dto.getCard_type(), true));
+			dto.setCard_channl_info(cim.cardChannel_info(dto.getCard_type(), dto.getCard_level()));
+			dto.setCard_element(cim.cardElement(dto.getCard_type(), true));
+			dto.setCard_date(cim.card_date(dto.getCard_type(), dto.getItm_trans_gf(), dto.getCard_level(), true));
+			dto.setCard_img_path(UCIM.userSPCardImg(dto.getCard_type(), dto.getCard_level(), true));
+			dto.setCard_skill1(cim.card_skill1(dto.getCard_skill(), dto.getCard_level()));
+			dto.setCard_skill2(cim.card_skill2(dto.getCard_skill()));
+			dto.setLevel_img_path(UIM.userLevelImg(dto.getLevels()));
+			if (dto.getCard_type() > 9999) {
+				int count = dto.getCard_type() % 10000;
+				dto.setSpirit_count(count);
+			}
+			System.out.println("스킬 : " + dto.getCard_skill());
+			System.out.println("스킬1 : " + dto.getCard_skill1());
+			System.out.println("스킬2 : " + dto.getCard_skill2());
+			System.out.println("이미지 경로 리스트 : " + dto.getCard_img_path());
+			System.out.println("정령 카운트 : " + dto.getSpirit_count());
+		}
+		return aList;
+	}
+
+	@Override
+	public int userShopAllListCountService() {
+		// TODO Auto-generated method stub
+		return dao.userShopAllListCount();
+	}
+
+	@Override
+	public UserShopDTO userShopCardDetailViewService(int shop_id) {
+		// TODO Auto-generated method stub
+		return dao.userShopCardDetailView(shop_id);
+	}
+
+	@Override
+	public List<UserShopDTO> userShopSearchListService(HashMap<String, Object> map) {
+		List<UserShopDTO> aList = dao.userShopSearchList(map);
+		for (UserShopDTO dto : aList) {
+			CardInfoManager cim = new CardInfoManager();
+			UserCardImgManager UCIM = new UserCardImgManager();
+			UserImgManager UIM = new UserImgManager();
+			dto.setCard_type_info(cim.cardTypeInfo(dto.getCard_type(), true));
+			dto.setCard_name_info(cim.cardNameInfo(dto.getCard_type(), true));
+			dto.setCard_channl_info(cim.cardChannel_info(dto.getCard_type(), dto.getCard_level()));
+			dto.setCard_element(cim.cardElement(dto.getCard_type(), true));
+			dto.setCard_date(cim.card_date(dto.getCard_type(), dto.getItm_trans_gf(), dto.getCard_level(), true));
+			dto.setCard_img_path(UCIM.userSPCardImg(dto.getCard_type(), dto.getCard_level(), true));
+			dto.setCard_skill1(cim.card_skill1(dto.getCard_skill(), dto.getCard_level()));
+			dto.setCard_skill2(cim.card_skill2(dto.getCard_skill()));
+			dto.setLevel_img_path(UIM.userLevelImg(dto.getLevels()));
+			if (dto.getCard_type() > 9999) {
+				int count = dto.getCard_type() % 10000;
+				dto.setSpirit_count(count);
+			}
+			System.out.println("스킬 : " + dto.getCard_skill());
+			System.out.println("스킬1 : " + dto.getCard_skill1());
+			System.out.println("스킬2 : " + dto.getCard_skill2());
+			System.out.println("이미지 경로 리스트 : " + dto.getCard_img_path());
+			System.out.println("정령 카운트 : " + dto.getSpirit_count());
+		}
+		return aList;
+	}
+
+	@Override
+	public int userShopSearchListCountService(HashMap<String, Object> map) {
+		// TODO Auto-generated method stub
+		return dao.userShopSearchCount(map);
+	}
+
+	@Override
+	public int userShopBuyCheckService(int shop_id) {
+		// TODO Auto-generated method stub
+		return dao.userShopBuyCheck(shop_id);
+	}
+
+	@Override
+	public int userShopBuyUserCheckService(int usr_id) {
+		// TODO Auto-generated method stub
+		return dao.userShopBuyUserCheck(usr_id);
+	}
+
+	@Override
+	public UserDTO userShopBuyUserInfoService(int usr_id) {
+		// TODO Auto-generated method stub
+		return dao.userShopBuyUserInfo(usr_id);
+	}
+
+	@Override
+	public int userGetSlotService(int usr_id) {
+		// TODO Auto-generated method stub
+		return dao.userGetSlot(usr_id);
+	}
+
+	@Override
+	public int userTotalCardCountService(int itm_usr_id) {
+		// TODO Auto-generated method stub
+		return dao.userTotalCardCount(itm_usr_id);
+	}
+
+	@Override
+	public List<UserCardDTO> buyUserCardListService(int itm_usr_id) {
+		// TODO Auto-generated method stub
+		return dao.buyUserCardList(itm_usr_id);
+	}
+
+	@Transactional(rollbackFor = { Exception.class })
+	@Override
+	public void buyCardTransUpdateService(HashMap<String, Object> map) throws Exception {
+		// TODO Auto-generated method stub
+		dao.buyCardTransUpdate(map);
+	}
+
+	@Transactional(rollbackFor = { Exception.class })
+	@Override
+	public void buyCardTransDeleteService(int itm_id) throws Exception {
+		// TODO Auto-generated method stub
+		dao.buyCardTransDelete(itm_id);
+	}
+
+	@Transactional(rollbackFor = { Exception.class })
+	@Override
+	public void buyCardInsertService(int itm_id) throws Exception {
+		// TODO Auto-generated method stub
+		dao.buyCardInsert(itm_id);
+	}
+
+	@Transactional(rollbackFor = { Exception.class })
+	@Override
+	public void userShopSellCardDeleteService(int shop_id) throws Exception {
+		// TODO Auto-generated method stub
+		dao.userShopSellCardDelete(shop_id);
+	}
+
+	@Override
+	public int bankCheckService(String usr_name) {
+		// TODO Auto-generated method stub
+		return dao.bankCheck(usr_name);
+	}
+
+	@Transactional(rollbackFor = { Exception.class })
+	@Override
+	public void sellUserBankUpdateService(HashMap<String, Object> map) throws Exception {
+		// TODO Auto-generated method stub
+		dao.sellUserBankUpdate(map);
+	}
+
+	@Transactional(rollbackFor = { Exception.class })
+	@Override
+	public void sellUserBackInsertService(HashMap<String, Object> map) throws Exception {
+		// TODO Auto-generated method stub
+		dao.sellUserBackInsert(map);
+	}
+
+	@Override
+	public UserDTO sellUserInfoService(String usr_name) {
+		// TODO Auto-generated method stub
+		return dao.sellUserInfo(usr_name);
+	}
+
+	@Transactional(rollbackFor = { Exception.class })
+	@Override
+	public void buyUserCodeUpdateService(HashMap<String, Object> map) throws Exception {
+		// TODO Auto-generated method stub
+		dao.buyUserCodeUpdate(map);
+	}
+
+	@Transactional(rollbackFor = { Exception.class })
+	@Override
+	public void sellUserSpiritUpdateService(HashMap<String, Object> map) throws Exception {
+		// TODO Auto-generated method stub
+		dao.sellUserSpiritUpdate(map);
+	}
+
+	@Transactional(rollbackFor = { Exception.class })
+	@Override
+	public void buyUserSpiritUpdateService(HashMap<String, Object> map) throws Exception {
+		// TODO Auto-generated method stub
+		dao.buyUserSpiritUpdate(map);
+	}
+
+	@Transactional(rollbackFor = { Exception.class })
+	@Override
+	public void userShopLogUpdateService(HashMap<String, Object> map) throws Exception {
+		// TODO Auto-generated method stub
+		dao.userShopLogUpdate(map);
+	}
+
+	@Override
+	public BankDTO userBankInfoService(int usr_id) {
+		// TODO Auto-generated method stub
+		return dao.userBankInfo(usr_id);
+	}
+
+	public UserGameActiveDTO userGameActiveStateService(String usr_name) {
+		// TODO Auto-generated method stub
+		return dao.userGameActiveState(usr_name);
+	}
+
+	@Transactional(rollbackFor = { Exception.class })
+	@Override
+	public void sendGiftMessageService(HashMap<String, Object> map) throws Exception {
+		// TODO Auto-generated method stub
+		dao.sendGiftMessage(map);
+	}
+
+	@Transactional(rollbackFor = { Exception.class })
+	@Override
+	public void sendBuyMessageService(HashMap<String, Object> map) throws Exception {
+		// TODO Auto-generated method stub
+		dao.sendBuyMessage(map);
+	}
+
+	@Transactional(rollbackFor = { Exception.class })
+	@Override
+	public int userShopBuyService(Integer shop_id, Integer card_room, HttpSession session) throws Exception {
+		// TODO Auto-generated method stub
+		int flag = 0;
+		int progressCode = 0;
+		UserDTO userSession = (UserDTO) session.getAttribute("userInfoSession");
+		if (userSession != null) {
+			System.out.println("userSession ---- OK");
+			if (shop_id != null) {
+				System.out.println("shop_id ---- OK");
+				int userCheck = dao.userShopBuyUserCheck(userSession.getUsr_id());
+				if (userCheck == 1) {
+					System.out.println("userCheck ---- OK");
+					int shopCheck = dao.userShopBuyCheck(shop_id);
+					if (shopCheck == 1) {
+						System.out.println("shopCheck ---- OK");
+						if(card_room == -1) {
+							UserDTO budto = new UserDTO(); // 구매자 정보
+							UserShopDTO usdto = new UserShopDTO(); // 물품 정보
+							usdto = dao.userShopCardDetailView(shop_id);
+							System.out.println("usdto ---- OK");
+							budto = dao.userShopBuyUserInfo(userSession.getUsr_id());
+							System.out.println("budto ---- OK");
+							int codeFlag = budto.getUsr_code().compareTo(usdto.getCard_price());
+							System.out.println("udto : " + budto.getUsr_code() + " card_price : " + usdto.getCard_price()
+									+ " codeFlag : " + codeFlag);
+							if (codeFlag == 0 || codeFlag == 1) {
+								if (!usdto.getUsr_name().equalsIgnoreCase(userSession.getUsr_name())) {
+									UserGameActiveDTO adto = new UserGameActiveDTO();
+									adto = dao.userGameActiveState(userSession.getUsr_name());
+									int adtoFlag = 0;
+									if (adto == null)
+										adtoFlag = 1;
+									else
+										adtoFlag = 2;
+									if (adtoFlag == 2) {
+										if (adto.getRoom() == -1) {
+											adtoFlag = 1;
+										} else {
+											adtoFlag = 2;
+										}
+									}
+									if (adtoFlag == 1) {
+										System.out.println("물품name : " + usdto.getUsr_name() + " 접속name : "
+												+ userSession.getUsr_name());
+										System.out.println("codeFlag ---- OK");
+										int buy_usr_nSlot = dao.userGetSlot(userSession.getUsr_id());
+										System.out.println("buy_usr_nSlot ---- OK");
+										int buy_usr_cardCount = dao.userTotalCardCount(userSession.getUsr_id());
+										System.out.println("buy_usr_cardCount ---- OK");
+										if (buy_usr_nSlot > buy_usr_cardCount) {
+											try {
+												System.out.println("buy_usr_nSlot > buy_usr_cardCount ---- OK");
+												// 구매자 업데이트
+												CardInfoManager cim = new CardInfoManager();
+												UserDTO sudto = new UserDTO(); // 판매자 정보
+												HashMap<String, Object> buyUser = new HashMap<String, Object>();
+												HashMap<String, Object> sellUser = new HashMap<String, Object>();
+												sudto = dao.sellUserInfo(usdto.getUsr_name());
+												usdto.setCard_name_info(cim.cardNameInfo(usdto.getCard_type(), true));
+												budto.setEmptySlot(dao.buyUserCardList(budto.getUsr_id()), buy_usr_nSlot);// 빈 번호 검색
+												dao.userShopSellCardDelete(usdto.getShop_id()); // 유저샾에서 물품 삭제
+
+												// 구매자 정보 해쉬
+												buyUser.put("itm_id", usdto.getItm_id());
+												buyUser.put("usr_id", budto.getUsr_id());
+												buyUser.put("emptySlot", budto.getEmptySlot());
+												buyUser.put("buyUserBalance", budto.getUsr_code().subtract(usdto.getCard_price()));
+
+												// 판매자 정보 해쉬
+												sellUser.put("sell_usr_id", sudto.getUsr_id());
+												sellUser.put("sell_usr_name", sudto.getUsr_name());
+												sellUser.put("itm_id", usdto.getItm_id());
+												sellUser.put("successState", 1);
+												sellUser.put("nowState", 0);
+												sellUser.put("buy_usr_name", budto.getUsr_name());
+
+												// giftMessage 해쉬
+												HashMap<String, Object> giftMessage = new HashMap<String, Object>();
+												giftMessage.put("seller_name", sudto.getUsr_name());
+												giftMessage.put("buyer_name", budto.getUsr_name());
+												giftMessage.put("gift_type", 12);
+												giftMessage.put("sent", 0);
+												giftMessage.put("amount_slot", usdto.getCard_price());
+
+												if (usdto.getCard_type() > 9999) {
+													System.out.println("정령구매 ---- OK");
+													int element = 0;
+													int count = usdto.getCard_type() % 10000;
+													if (usdto.getCard_type() > 9999 && usdto.getCard_type() < 20000) {
+														element = 1;
+														buyUser.put("spirit", budto.getUsr_water() + count);
+													} else if (usdto.getCard_type() > 19999 && usdto.getCard_type() < 30000) {
+														element = 2;
+														buyUser.put("spirit", budto.getUsr_fire() + count);
+													} else if (usdto.getCard_type() > 29999 && usdto.getCard_type() < 40000) {
+														element = 3;
+														buyUser.put("spirit", budto.getUsr_earth() + count);
+													} else {
+														element = 4;
+														buyUser.put("spirit", budto.getUsr_wind() + count);
+													}
+													buyUser.put("spiritType", element);
+													dao.buyUserSpiritUpdate(buyUser); // 구매자 정령 업데이트
+													giftMessage.put("type_name", cim.cardNameInfo(usdto.getCard_type(), true));
+												} else {
+													dao.buyCardTransUpdate(buyUser); // 임시 테이블 저장 아이템 업데이트
+													dao.buyCardInsert(usdto.getItm_id()); // 임시 테이블 저장 아이템을 구매자 아이템으로 추가
+													dao.buyCardTransDelete(usdto.getItm_id()); // 임시 테이블의 해당 아이템 제거
+													dao.userShopLogUpdate(sellUser);
+													giftMessage.put("type_name", cim.cardNameInfo(usdto.getCard_type(), true) + " 아이템");
+												}
+
+												// 판매 및 구매 코드 업데이트
+												int userBankCount = dao.bankCheck(usdto.getUsr_name());
+												dao.buyUserCodeUpdate(buyUser); // 구매자 코드 차감
+												if (userBankCount > 0) {
+													BankDTO bank = new BankDTO();
+													bank = dao.userBankInfo(sudto.getUsr_id());
+													sellUser.put("sellUserBalance",
+															bank.getDeposit().add(usdto.getCard_price()));
+													dao.sellUserBankUpdate(sellUser); // 판매자 은행코드 추가
+												} else {
+													sellUser.put("sellUserBalance", usdto.getCard_price());
+													dao.sellUserBackInsert(sellUser); // 판매자 은행개설 및 코드추가
+												}
+												//giftMessage = null;
+												dao.sendGiftMessage(giftMessage);
+												dao.sendBuyMessage(giftMessage);
+												flag = 200; // 구매성공
+											} catch (Exception e) {
+												// TODO: handle exception
+												flag = 500;
+												e.printStackTrace();
+												TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+											}
+										} else {
+											flag = 8; // 인벤토리 부족
+										}
+									} else {
+										flag = 7; // 대기실에서만 가능
+									}
+								} else {
+									flag = 6; // 자신의 물품
+								}
+							} else {
+								flag = 5; // 코드가 부족
+							}
+						} else {
+							flag = 9; // 유상1로 올려진 템 -> 게임에서만 구매가능
+						}
+					} else {
+						flag = 4; // 물품이 팔렸거나 삭제됨
+					}
+				} else {
+					flag = 3; // 유저존재X
+				}
+			} else {
+				flag = 2; // ?샾아이디 못불러옴
+			}
+		} else {
+			flag = 1; // 세션끊킴
+		}
+		return flag;
+	}
+
+}

@@ -1,0 +1,3 @@
+##kakao
+
+kakao.url = https://kauth.kakao.com/oauth/authorize?client_id=54956a942e84cb336582d1eb95702d4b&redirect_uri=http://121.141.135.110:8070/sp/oauth.do&response_type=code

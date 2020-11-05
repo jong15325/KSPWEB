@@ -1,0 +1,341 @@
+package dao;
+
+import java.util.HashMap;
+import java.util.List;
+
+import org.mybatis.spring.SqlSessionTemplate;
+
+import dto.GuestBookDTO;
+import dto.GuildApplicationDTO;
+import dto.GuildDTO;
+import dto.GuildMemberDTO;
+import dto.GuildPageDTO;
+import dto.GuildPositionDTO;
+import dto.UserDTO;
+
+public class GuildDaoImp implements GuildDAO {
+
+	private SqlSessionTemplate sqlSession;
+
+	public void setSqlSession(SqlSessionTemplate sqlSession) {
+		this.sqlSession = sqlSession;
+	}
+
+	public GuildDaoImp() {
+
+	}
+
+	@Override
+	public List<GuildDTO> guildList(GuildPageDTO guildPageDto) {
+		// TODO Auto-generated method stub
+		return sqlSession.selectList("guild.guildList",guildPageDto);
+	}
+
+	@Override
+	public int guildListTotalCount() {
+		// TODO Auto-generated method stub
+		return sqlSession.selectOne("guild.guildListCount");
+	}
+
+	@Override
+	public GuildDTO guildHome(int guild_id) {
+		// TODO Auto-generated method stub
+		return sqlSession.selectOne("guild.guildHome", guild_id);
+	}
+
+	@Override
+	public int guildLikeCheck(HashMap<String, Object> map) {
+		// TODO Auto-generated method stub
+		return sqlSession.selectOne("guild.guildLikeCheck", map);
+	}
+
+	@Override
+	public void guildLikeInsert(HashMap<String, Object> map) {
+		// TODO Auto-generated method stub
+		sqlSession.insert("guild.guildLikeInsert", map);
+	}
+
+	@Override
+	public void guildLikeDelete(HashMap<String, Object> map) {
+		// TODO Auto-generated method stub
+		sqlSession.delete("guild.guildLikeDelete", map);
+	}
+
+	@Override
+	public int guildLikeCount(int guild_id) {
+		// TODO Auto-generated method stub
+		return sqlSession.selectOne("guild.guildLikeCount", guild_id);
+	}
+
+	@Override
+	public int guildMemberCount(int guild_id) {
+		// TODO Auto-generated method stub
+		return sqlSession.selectOne("guild.guildMemberCount", guild_id);
+	}
+
+	@Override
+	public int guildTotalRank(int guild_id) {
+		// TODO Auto-generated method stub
+		return sqlSession.selectOne("guild.guildTotalRank", guild_id);
+	}
+
+	@Override
+	public int guildPointCheck(int guild_id) {
+		// TODO Auto-generated method stub
+		return sqlSession.selectOne("guild.guildPointCheck", guild_id);
+	}
+
+	@Override
+	public List<GuestBookDTO> guildGuestBookList(int guild_id) {
+		// TODO Auto-generated method stub
+		return sqlSession.selectList("guild.guildGuestBookList", guild_id);
+	}
+
+	@Override
+	public void guildGuestBookInsert(GuestBookDTO gdto) {
+		// TODO Auto-generated method stub
+		sqlSession.insert("guild.guildGuestBookInsert", gdto);
+	}
+
+	@Override
+	public void guildGuestBookDelete(GuestBookDTO gdto) {
+		// TODO Auto-generated method stub
+		sqlSession.update("guild.guildGuestBookDelete", gdto);
+	}
+
+	@Override
+	public int guildCheck(int guild_id) {
+		// TODO Auto-generated method stub
+		return sqlSession.selectOne("guild.guildCheck", guild_id);
+	}
+
+	@Override
+	public int guildMemberCheck(HashMap<String, Object> map) {
+		// TODO Auto-generated method stub
+		return sqlSession.selectOne("guild.guildMemberCheck", map);
+	}
+
+	@Override
+	public void guildMemberDelete(HashMap<String, Object> map) {
+		// TODO Auto-generated method stub
+		sqlSession.delete("guild.guildMemberDelete", map);
+	}
+
+	@Override
+	public void guildUserDelete(int usr_id) {
+		// TODO Auto-generated method stub
+		sqlSession.update("guild.guildUserDelete", usr_id);
+	}
+
+	@Override
+	public void guildMemberInsert(HashMap<String, Object> map) {
+		// TODO Auto-generated method stub
+		sqlSession.insert("guild.guildMemberInsert", map);
+	}
+
+	@Override
+	public void guildUserInsert(HashMap<String, Object> map) {
+		// TODO Auto-generated method stub
+		sqlSession.update("guild.guildUserInsert", map);
+	}
+
+	@Override
+	public int guildMemberCheckOne(int usr_id) {
+		// TODO Auto-generated method stub
+		return sqlSession.selectOne("guild.guildMemberCheckOne", usr_id);
+	}
+
+	@Override
+	public int guildAppCheckOne(int usr_id) {
+		// TODO Auto-generated method stub
+		return sqlSession.selectOne("guild.guildAppCheckOne", usr_id);
+	}
+
+	@Override
+	public GuildDTO guildJoinSelect(String guild_name) {
+		// TODO Auto-generated method stub
+		return sqlSession.selectOne("guild.guildJoinSelect", guild_name);
+	}
+
+	@Override
+	public UserDTO guildUserSetSession(String usr_name) {
+		// TODO Auto-generated method stub
+		return sqlSession.selectOne("user.userLogin", usr_name);
+	}
+
+	@Override
+	public int guildIdeologyCheck(int guild_id) {
+		// TODO Auto-generated method stub
+		return sqlSession.selectOne("guild.guildIdeologyCheck", guild_id);
+	}
+
+	@Override
+	public void guildAppInsert(HashMap<String, Object> map) {
+		// TODO Auto-generated method stub
+		sqlSession.insert("guild.guildAppInsert", map);
+	}
+
+	@Override
+	public int guildAppGuildCheck(int usr_id) {
+		// TODO Auto-generated method stub
+		return sqlSession.selectOne("guild.guildAppGuildCheck", usr_id);
+	}
+
+	@Override
+	public void guildAppDelete(int usr_id) {
+		// TODO Auto-generated method stub
+		sqlSession.delete("guild.guildAppDelete", usr_id);
+	}
+
+	@Override
+	public int guildAppGuildCheckOne(int usr_id) {
+		// TODO Auto-generated method stub
+		return sqlSession.selectOne("guild.guildAppGuildCheckOne", usr_id);
+	}
+
+	@Override
+	public List<GuildDTO> guildSearchMap(HashMap<String, Object> map) {
+		// TODO Auto-generated method stub
+		return sqlSession.selectList("guild.guildSearch", map);
+	}
+
+	@Override
+	public int guildSearchCountMap(HashMap<String, Object> map) {
+		// TODO Auto-generated method stub
+		return sqlSession.selectOne("guild.guildSearchCount", map);
+	}
+
+	@Override
+	public List<GuestBookDTO> guildGuestBookList2(HashMap<String, Object> map) {
+		// TODO Auto-generated method stub
+		return sqlSession.selectList("guild.guildGuestBookList2", map);
+	}
+
+	@Override
+	public int guildHomeUserChar(String usr_name) {
+		// TODO Auto-generated method stub
+		return sqlSession.selectOne("guild.guildHomeUserChar", usr_name);
+	}
+
+	@Override
+	public int guildGuestBookCount(HashMap<String, Object> map) {
+		// TODO Auto-generated method stub
+		return sqlSession.selectOne("guild.guildGuestBookCount", map);
+	}
+
+	@Override
+	public int isGuildLeader(HashMap<String, Object> map) {
+		// TODO Auto-generated method stub
+		return sqlSession.selectOne("guild.isGuildLeader", map);
+	}
+
+	@Override
+	public int myInformationChangeCheck(HashMap<String, Object> map) {
+		// TODO Auto-generated method stub
+		return sqlSession.selectOne("guild.userLoginCheck", map);
+	}
+
+	@Override
+	public List<GuildApplicationDTO> guildApplicationList(HashMap<String, Object> map) {
+		// TODO Auto-generated method stub
+		return sqlSession.selectList("guild.guildApplicationList", map);
+	}
+
+	@Override
+	public int guildApplicationCount(int guild_id) {
+		// TODO Auto-generated method stub
+		return sqlSession.selectOne("guild.guildApplicationCount", guild_id);
+	}
+
+	@Override
+	public GuildDTO guildInfo(String guild_name) {
+		// TODO Auto-generated method stub
+		return sqlSession.selectOne("guild.guildLoginSelect", guild_name);
+	}
+
+	@Override
+	public List<GuildMemberDTO> guildMemberListCreate(HashMap<String, Object> map) {
+		// TODO Auto-generated method stub
+		return sqlSession.selectList("guild.guildMemberListCreate", map);
+	}
+
+	@Override
+	public int guildManagerListCount(HashMap<String, Object> map) {
+		// TODO Auto-generated method stub
+		return sqlSession.selectOne("guild.guildManagerListCount", map);
+	}
+
+	@Override
+	public void guildManagerMemberExile(HashMap<String, Object> map) {
+		// TODO Auto-generated method stub
+		sqlSession.delete("guild.guildManagerMemberExile", map);
+	}
+
+	@Override
+	public int guildManagerAppListCount(HashMap<String, Object> map) {
+		// TODO Auto-generated method stub
+		return sqlSession.selectOne("guild.guildManagerAppListCount", map);
+	}
+
+	@Override
+	public List<GuildApplicationDTO> guildAppListCreate(HashMap<String, Object> map) {
+		// TODO Auto-generated method stub
+		return sqlSession.selectList("guild.guildAppListCreate",map);
+	}
+
+	@Override
+	public void guildManagerAppRefuse(HashMap<String, Object> map) {
+		// TODO Auto-generated method stub
+		sqlSession.delete("guild.guildManagerAppRefuse", map);
+	}
+
+	@Override
+	public void guildManagerAppAccept(HashMap<String, Object> map) {
+		// TODO Auto-generated method stub
+		sqlSession.delete("guild.guildManagerAppAccept", map);
+	}
+
+	@Override
+	public GuildApplicationDTO guildAppInfo(int gapplication_id) {
+		// TODO Auto-generated method stub
+		return sqlSession.selectOne("guild.guildAppInfo", gapplication_id);
+	}
+
+	@Override
+	public GuildMemberDTO guildMemberInfo(int gmember_id) {
+		// TODO Auto-generated method stub
+		return sqlSession.selectOne("guild.guildMemberInfo", gmember_id);
+	}
+
+	@Override
+	public GuildPositionDTO guildPositionInfo(int gposition_id) {
+		// TODO Auto-generated method stub
+		return sqlSession.selectOne("guild.guildMemberInfo", gposition_id);
+	}
+	
+	@Override
+	public List<GuildPositionDTO> guildPositionListCreate(HashMap<String, Object> map) {
+		// TODO Auto-generated method stub
+		return sqlSession.selectList("guild.guildPositionListCreate", map);
+	}
+
+	@Override
+	public GuildPositionDTO guildUserPositionInfo(HashMap<String, Object> map) {
+		// TODO Auto-generated method stub
+		return sqlSession.selectOne("guild.guildUserPositionInfo", map);
+	}
+
+	@Override
+	public GuildMemberDTO guildUserMemberInfo(int usr_id) {
+		// TODO Auto-generated method stub
+		return sqlSession.selectOne("guild.guildUserMemberInfo", usr_id);
+		
+	}
+
+	@Override
+	public int guildManagerPositionListCount(HashMap<String, Object> map) {
+		// TODO Auto-generated method stub
+		return sqlSession.selectOne("guild.guildManagerPositionListCount", map);
+	}
+
+}

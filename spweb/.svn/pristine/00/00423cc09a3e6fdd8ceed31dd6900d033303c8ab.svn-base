@@ -1,0 +1,272 @@
+package controller;
+
+import java.util.Properties;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import org.codehaus.jackson.JsonNode;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
+
+import api.GetUserIPUtil;
+import api.GuildManager;
+import api.Kakao_UserInfo;
+import api.Kakao_restTokenApi;
+import api.LoginManager;
+import dto.GuildDTO;
+import dto.UserDTO;
+import dto.UserLoginDTO;
+import dto.UserRegisterDTO;
+import properties.ServerProperties;
+import service.UserService;
+
+/*
+ * 20.3.15 userIsLoginCheck에서 유저네임 tolowcase로 비교*/
+
+/*
+@RunWith(SpringJUnit4ClassRunner.class)*/
+@Controller
+public class UserController {
+	
+	@Value("#{serverProperties}")
+	public Properties serverProperties;
+	
+	@Value("#{serverProperties['server.ip']}")
+	private String serverProperties2;
+	
+	@Resource(name="serverProperties")
+	private Properties serverProperties3;
+	
+	private UserService service;
+	LoginManager loginManager = LoginManager.getInstance();
+	GuildManager guildManager = GuildManager.getInstance();
+	
+	public void setService(UserService service) {
+		this.service = service;
+	}
+
+	public UserController() {
+
+	}
+
+	@RequestMapping(value = "/userRegister.do")
+	public ModelAndView userRegister() {
+		System.out.println("회원 등록 페이지 접근.");
+		ModelAndView mav = new ModelAndView();
+		mav.setViewName("/user/userRegister");
+		return mav;
+	}
+
+	@ResponseBody
+	@RequestMapping(value = "/userRegisterProcess.do", method = RequestMethod.POST)
+	public UserRegisterDTO userRegisterProcess(UserRegisterDTO userRegisterDto, HttpServletRequest request) {
+		System.out.println("회원 등록 프로세스 접근.");
+		System.out.println("getUsr_name : "+userRegisterDto.getUsr_name());
+		System.out.println("getKakao_id : "+userRegisterDto.getKakao_id());
+		System.out.println("getUsr_pw : "+userRegisterDto.getUsr_pw());
+		System.out.println("getGender : "+userRegisterDto.getUsr_gender());
+		System.out.println("getUsr_ip : "+userRegisterDto.getUsr_ip());
+		int checkKakao = service.kakaoCountCheckService(userRegisterDto.getKakao_id());
+		int checkUserName = service.userNameCountService(userRegisterDto.getUsr_name());
+		int registerFlag = 0;
+		if (checkKakao < 50) {
+			if(checkUserName < 1) {
+				System.out.println("가입성공");
+				registerFlag = 1;
+				String getUserIp = GetUserIPUtil.getRemoteAddr(request);
+				userRegisterDto.setUsr_ip(getUserIp);
+				service.userRegisterService(userRegisterDto);
+				int select_id = service.userSelectIdService(userRegisterDto.getUsr_name());
+				service.userRegisterEquipmentsService(select_id);	
+			}else {
+				System.out.println("이미 가입된 아이디");
+				registerFlag =3; // 이미 존재하는 이름
+			}
+		}else {
+			System.out.println("이미 가입된 카카오");
+			registerFlag =2; // 이미 가입된 카카오
+		}
+		userRegisterDto.setRegisterFlag(registerFlag);
+		System.out.println("registerFlag : "+registerFlag);
+		return userRegisterDto;
+	}
+
+	@RequestMapping(value = "/userLogin.do")
+	public ModelAndView userLogin() {
+		System.out.println("로그인 페이지 접근.");
+		ModelAndView mav = new ModelAndView();
+		mav.setViewName("/user/userLogin");
+		return mav;
+	}
+	
+	@RequestMapping(value = "/userLogin2.do")
+	public ModelAndView userLogin2() {
+		System.out.println("로그인 페이지 접근.");
+		ModelAndView mav = new ModelAndView();
+		mav.setViewName("/user/userLogin2");
+		return mav;
+	}
+	
+	@ResponseBody
+	@RequestMapping(value = "/userLoginProcess.do", method = RequestMethod.POST)
+	public UserLoginDTO userLoginProcess(UserLoginDTO userLoginDto, HttpSession session) {
+		System.out.println("로그인 프로세스 접근.");
+		int userCheckCount = service.userLoginCountService(userLoginDto);
+		if(userCheckCount == 1) {
+			boolean userIsLoginCheck = loginManager.loginIsUsing(userLoginDto.getUsr_name().toLowerCase());//이미 사용중인지 체크
+			if(userIsLoginCheck == true) {
+				userLoginDto.setLoginFlag(2); // 이미 접속중
+			}else {
+				System.out.println("로그인 가능");
+				userLoginDto.setLoginFlag(1);
+				UserDTO userDto = service.userLoginService(userLoginDto.getUsr_name());
+				session.setAttribute("userInfoSession", userDto);
+				loginManager.setSession(session, userDto.getUsr_name());//세션관리에 저장
+				System.out.println("접속한 사용자 이름 : "+loginManager.getUsr_name(session)); //접속 아이디 리턴
+				loginManager.printLoginUsers();//접속중인 아이디 출력
+				if(!userDto.getUsr_guildname().isEmpty()) {
+					GuildDTO guildDto = service.guildLoginSelectService(userDto.getUsr_guildname());
+					session.setAttribute("userGuildInfoSession", guildDto);
+					String guildNUser = userDto.getUsr_guildname()+"/"+userDto.getUsr_name();
+					guildManager.setSession(session, guildNUser);
+					guildManager.printGuildUsers();
+				}
+				session.setAttribute("userLoginFlag", userLoginDto.getLoginFlag());
+			}
+		}else {
+			userLoginDto.setLoginFlag(0);
+		}
+		return userLoginDto;
+	}
+	
+	@ResponseBody
+	@RequestMapping(value = "/alReadyConnected.do", method = RequestMethod.POST)
+	public UserLoginDTO alReadyConnected(UserLoginDTO userLoginDto, HttpSession session) {
+		System.out.println("재접속 프로세스 접근");
+		UserDTO userDto = service.userLoginService(userLoginDto.getUsr_name());
+		String guildNUser = userDto.getUsr_guildname()+"/"+userDto.getUsr_name();
+		//if(session == null) {
+			loginManager.invalidateUserSession(userLoginDto.getUsr_name());
+			loginManager.removeUserSession(userLoginDto.getUsr_name());
+			guildManager.invalidateGuildSession(guildNUser);	
+			guildManager.removeGuildSession(guildNUser);	
+		//}
+		userLoginDto.setLoginFlag(1);
+		session.setAttribute("userInfoSession", userDto);
+		loginManager.setSession(session, userDto.getUsr_name());//세션관리에 저장
+		loginManager.printLoginUsers();//접속중인 아이디 출력
+		if(!userDto.getUsr_guildname().isEmpty()) {
+			GuildDTO guildDto = service.guildLoginSelectService(userDto.getUsr_guildname());
+			session.setAttribute("userGuildInfoSession", guildDto);
+			guildManager.setSession(session, guildNUser);
+			guildManager.printGuildUsers();
+		}
+		session.setAttribute("userLoginFlag", userLoginDto.getLoginFlag());
+		
+		return userLoginDto;
+	}
+	
+	@ResponseBody
+	@RequestMapping(value = "/userRegisterNameCheck.do", method = RequestMethod.POST)
+	public int userRegisterNameCheck(String usr_name) {
+		System.out.println("유저네임 체크 접근.");
+		int checkUserName = service.userNameCountService(usr_name);
+		System.out.println("유저네임 체크 접근. usr_name : "+usr_name);
+		int checkFlag = 0;
+		if(checkUserName <= 0) {
+			System.out.println("중복없음.");
+			checkFlag = 0;
+		}else {
+			System.out.println("중복잇음.");
+			checkFlag = 1;
+		}
+		return checkFlag;
+	}
+
+	@RequestMapping(value = "/userLogout.do")
+	public String userLogOut(HttpSession session, String usr_name) {
+		System.out.println("로그아웃 접근.");
+		session.removeAttribute("userInfoSession");
+		session.removeAttribute("userGuildInfoSession");
+		session.invalidate();
+		loginManager.removeUserSession(usr_name);
+		loginManager.invalidateUserSession(usr_name);
+		loginManager.printLoginUsers();//접속중인 아이디 출력
+		return "redirect:/userLogin.do";
+	}
+	
+	@RequestMapping(value = "/userRegisterSuccess.do")
+	public ModelAndView userRegisterSuccess() {
+		System.out.println("회원가입 완료 페이지 접근.");
+		ModelAndView mav = new ModelAndView();
+		mav.setViewName("/user/userRegisterSuccess");
+		return mav;
+	}
+	
+	@RequestMapping(value = "/userRegisterFail.do")
+	public ModelAndView userRegisterFail() {
+		System.out.println("회원가입 실패 페이지 접근.");
+		ModelAndView mav = new ModelAndView();
+		mav.setViewName("/user/userRegisterFail");
+		return mav;
+	}
+	
+	@RequestMapping(value = "/oauth.do", produces = "application/json", method = {RequestMethod.GET, RequestMethod.POST})
+	public String userKakaoLogin(@RequestParam("code") String code, HttpSession session) {
+		
+		//System.out.println("1 : " + serverProperties.getProperty("server.ip"));
+		System.out.println("2 : " + serverProperties2);
+		//System.out.println("3 : " + serverProperties3.getProperty("server.ip"));
+		System.out.println("카카오 인증  접근.");
+		System.out.println("kakaoCode = " + code);
+		// 1042695122 //똑같
+		// 1043218241 //1043218241
+		JsonNode node = Kakao_restTokenApi.getKakaoAccessToken(code, serverProperties.getProperty("server.ip"));
+
+		System.out.println("Node = " + node);
+
+		JsonNode accessToken = node.get("access_token");
+
+		session.setAttribute("access_token", accessToken);
+
+		JsonNode userInfo = Kakao_UserInfo.getKakaoUserInfo(accessToken);
+
+		String id = userInfo.path("id").asText();
+		String usr_name = null;
+		String usr_email = null;
+		
+		
+		JsonNode properties = userInfo.path("properties");
+		JsonNode kakao_account = userInfo.path("kakao_account");
+		
+		usr_name = properties.path("nickname").asText();
+		usr_email = kakao_account.path("email").asText();
+		
+		System.out.println("kakao_id : " + id);
+		System.out.println("kakao_nickname : " + usr_name);
+		System.out.println("kakao_email : " + usr_email);
+		
+		int transKakaoId = Integer.parseInt(id);
+		int checkKakao = service.kakaoCountCheckService(transKakaoId);
+		System.out.println("checkKakao : " + checkKakao);
+		if (checkKakao < 50) { // 등록된 카카오 아이디가
+			UserRegisterDTO userRegisterDto = new UserRegisterDTO();
+			userRegisterDto.setKakao_id(transKakaoId);
+			session.setAttribute("kakao", userRegisterDto);
+			return "redirect:/userRegister.do";
+		}
+		
+		return "redirect:/userRegisterFail.do";
+
+	}
+
+	// https://kauth.kakao.com/oauth/authorize?client_id=54956a942e84cb336582d1eb95702d4b&redirect_uri=http://121.141.136.218:8070/sp/oauth.do&response_type=code
+
+}

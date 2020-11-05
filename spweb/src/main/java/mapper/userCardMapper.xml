@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="userCard">
+
+	<select id="detailinfo" resultType="dto.UserCardDTO">
+		SELECT itm_id, itm_slot, itm_usr_id, itm_type, DATEDIFF(itm_gf, NOW()) AS itm_trans_gf, itm_level, itm_skill
+		FROM items
+		WHERE itm_id = #{itm_id}
+	</select>
+</mapper>

@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="guild">
+
+	<select id="guildList" resultType="dto.GuildDTO">
+	<![CDATA[
+	SELECT guild_id,
+		guild_name, guild_leader, guild_slots, guild_banner,
+		guild_ideology, ideology_date, guild_condition,
+		condition_date, create_date, guild_greetings, guild_introduce
+		FROM guild ORDER BY guild_id DESC
+		LIMIT #{startRow}, #{blockCount}
+	]]>
+	</select>
+	
+	<select id="guildGuestBookList2" resultType="dto.GuestBookDTO">
+	<![CDATA[
+		SELECT gb_id,guest_category, type_id, guest_writer,
+		tag_name, guest_content, guest_date, guest_del
+		FROM z_guest_book
+		WHERE  guest_date > DATE_SUB(now(), INTERVAL 1 DAY) AND guest_category = 0 AND type_id = #{type_id} AND guest_del = 0 ORDER BY guest_date ASC LIMIT #{startRow}, #{lastRow}
+	]]>
+	</select>
+	
+	<select id="guildGuestBookCount" resultType="int">
+	<![CDATA[
+		SELECT count(*)
+		FROM z_guest_book
+		WHERE guest_category = 0 AND type_id = #{type_id} AND guest_del = 0
+	]]>
+	</select>
+	
+	<select id="guildListCount" resultType="int">
+		SELECT count(*) FROM guild
+	</select>
+	
+	<select id="guildHome" parameterType="int" resultType="dto.GuildDTO">
+		SELECT guild_id,
+		guild_name, guild_leader, guild_slots, guild_banner,
+		guild_ideology, ideology_date, guild_condition,
+		condition_date, create_date, guild_greetings, guild_introduce
+		FROM guild
+		WHERE
+		guild_id = #{guild_id}
+	</select>
+	
+	<select id="guildLoginSelect" parameterType="String" resultType="dto.GuildDTO">
+		SELECT guild_id,
+		guild_name, guild_leader, guild_slots, guild_banner,
+		guild_ideology, ideology_date, guild_condition,
+		condition_date, create_date, guild_greetings, guild_introduce
+		FROM guild
+		WHERE
+		guild_name = #{guild_name}
+	</select>
+	
+	<select id="guildJoinSelect" parameterType="String" resultType="dto.GuildDTO">
+		SELECT guild_id,
+		guild_name, guild_leader, guild_slots, guild_banner,
+		guild_ideology, ideology_date, guild_condition,
+		condition_date, create_date, guild_greetings, guild_introduce
+		FROM guild
+		WHERE
+		guild_name = #{guild_name}
+	</select>
+	
+	<select id="guildLikeCheck" resultType="int">
+		SELECT count(*) FROM z_guild_like
+		WHERE usr_id = #{usr_id} AND guild_id = #{guild_id}
+	</select>
+	
+	<insert id="guildLikeInsert" parameterType="java.util.HashMap">
+		INSERT INTO z_guild_like ( usr_id, usr_name, guild_id, guild_name, like_type )
+		VALUES (
+			#{usr_id, jdbcType=INTEGER}, #{usr_name, jdbcType=VARCHAR},
+			#{guild_id, jdbcType=INTEGER}, #{guild_name, jdbcType=VARCHAR},
+			#{like_type, jdbcType=INTEGER}
+		)
+	</insert>
+	
+	<delete id="guildLikeDelete" parameterType="java.util.HashMap">
+		DELETE FROM z_guild_like WHERE usr_id = #{usr_id} AND guild_id = #{guild_id}
+	</delete>
+
+	<select id="guildLikeCount" resultType="int">
+		SELECT count(*) FROM z_guild_like
+		WHERE guild_id = #{guild_id}
+	</select>
+	
+	<select id="guildMemberCount" resultType="int">
+		SELECT count(*) FROM guildmember
+		WHERE guild_id = #{guild_id}
+	</select>
+	
+	<select id="guildTotalRank" resultType="int">
+	<!-- 채널별 랭크 -->
+		<!-- SELECT guild_id, point, rank FROM(select guild_id, point, @vRank := @vRank+1 as rank FROM guildpoint AS p, (select @vRank := 0) AS r WHERE channelport = %d ORDER BY point DESC, guild_id DESC) AS cnt WHERE guild_id = %d -->
+	<!-- 종합 랭크 -->
+		SELECT guild_id, sum(point), rank FROM(SELECT guild_id, point, @vRank := @vRank+1 as rank FROM guildpoint AS p, (
+			SELECT @vRank := 0) AS r  ORDER BY point DESC, guild_id DESC ) AS cnt
+				WHERE guild_id = #{guild_id} GROUP BY guild_id
+	</select>
+	
+	<select id="guildPointCheck" resultType="int">
+		SELECT count(*) FROM guildpoint WHERE guild_id = #{guild_id}
+	</select>
+	
+	<select id="guildGuestBookList" resultType="dto.GuestBookDTO">
+		SELECT * FROM z_guest_book WHERE guest_category = 0 AND type_id = #{type_id} AND guest_del = 0 ORDER BY guest_date ASC;
+	</select>
+	
+	<insert id="guildGuestBookInsert" parameterType="dto.GuestBookDTO" >
+		INSERT INTO z_guest_book (guest_category, type_id, guest_writer, tag_name, guest_content)
+		VALUES(#{guest_category, jdbcType=INTEGER}, #{type_id, jdbcType=INTEGER}, #{guest_writer, jdbcType=VARCHAR}, #{tag_name, jdbcType=VARCHAR}, #{guest_content, jdbcType=VARCHAR}
+		)
+	</insert>
+	
+	<update id="guildGuestBookDelete" parameterType="dto.GuestBookDTO">
+		UPDATE z_guest_book SET guest_del = 1 WHERE gb_id = #{gb_id}
+	</update>
+	
+	<select id="guildMemberCheck" resultType="int">
+		SELECT count(*) FROM guildmember WHERE usr_id = #{usr_id} AND guild_id = #{guild_id}
+	</select>
+	
+	<select id="guildMemberCheckOne" resultType="int">
+		SELECT count(*) FROM guildmember WHERE usr_id = #{usr_id}
+	</select>
+	
+	<select id="guildAppCheckOne" resultType="int">
+		SELECT count(*) FROM guildapplication WHERE usr_id = #{usr_id}
+	</select>
+	
+	<select id="guildCheck" resultType="int">
+		SELECT count(*) FROM guild WHERE guild_id = #{guild_id}
+	</select>
+	
+	<delete id="guildMemberDelete">
+		DELETE FROM guildmember WHERE guild_id = #{guild_id} AND usr_id = #{usr_id}
+	</delete>
+	
+	<update id="guildUserDelete">
+		UPDATE users SET usr_guildname = '', usr_guildduty = '' WHERE usr_id = #{usr_id}
+	</update>
+	
+	<insert id="guildMemberInsert" parameterType="dto.GuildMemberDTO" >
+		INSERT INTO guildmember (guild_id, guild_name, usr_id, usr_name)
+		VALUES(#{guild_id, jdbcType=INTEGER}, #{guild_name, jdbcType=VARCHAR},
+		#{usr_id, jdbcType=INTEGER}, #{usr_name, jdbcType=VARCHAR}
+		)
+	</insert>
+	
+	<update id="guildUserInsert">
+		UPDATE users SET usr_guildname = #{guild_name} WHERE usr_id = #{usr_id}
+	</update>
+	
+	<select id="guildIdeologyCheck" resultType="int">
+		SELECT guild_ideology FROM guild WHERE guild_id = #{guild_id}
+	</select>
+	
+	<insert id="guildAppInsert" parameterType="dto.GuildApplicationDTO" >
+		INSERT INTO guildapplication (guild_id, usr_id, usr_name)
+		VALUES(#{guild_id, jdbcType=INTEGER}, #{usr_id, jdbcType=INTEGER},
+		#{usr_name, jdbcType=VARCHAR}
+		)
+	</insert>
+
+	<select id="guildAppGuildCheckOne" resultType="int">
+		SELECT count(*) FROM guildapplication WHERE usr_id = #{usr_id}
+	</select>
+	
+	<select id="guildAppGuildCheck" resultType="int">
+		SELECT guild_id FROM guildapplication WHERE usr_id = #{usr_id}
+	</select>
+	
+	<delete id="guildAppDelete">
+		DELETE FROM guildapplication WHERE usr_id = #{usr_id}
+	</delete>
+	
+	<select id="guildSearch" parameterType="java.util.HashMap" resultType="dto.GuildDTO">
+		SELECT guild_id,
+		guild_name, guild_leader, guild_slots, guild_banner,
+		guild_ideology, ideology_date, guild_condition,
+		condition_date, create_date, guild_greetings, guild_introduce
+		FROM guild
+		WHERE
+		<choose>
+			<when test="option == 'guildSearchName'">
+				guild_name
+			</when>
+			<when test="option == 'guildSearchLeader'">
+				guild_leader
+			</when>
+		</choose>
+		LIKE CONCAT ('%', #{keyword}, '%')
+		ORDER BY guild_id DESC
+		LIMIT #{startRow}, #{blockCount}
+	</select>
+	
+	<select id="guildSearchCount" parameterType="java.util.HashMap" resultType="int">
+		SELECT count(*) FROM guild WHERE
+		<choose>
+			<when test="option == 'guildSearchName'">
+				guild_name
+			</when>
+			<when test="option == 'guildSearchLeader'">
+				guild_leader
+			</when>
+		</choose>
+		LIKE CONCAT ('%', #{keyword}, '%')
+	</select>
+	
+	<select id="guildHomeUserChar" resultType="int">
+		SELECT usr_char FROM users WHERE usr_name = #{usr_name}
+	</select>
+	
+	<select id="isGuildLeader" resultType="int">
+		SELECT count(*) FROM guild WHERE guild_leader = #{usr_name} AND guild_id = #{guild_id}
+	</select>
+	
+	<select id="userLoginCheck" resultType="int">
+		SELECT count(*) FROM users WHERE usr_name = #{usr_name} AND BINARY(usr_pw) = #{usr_pw}
+	</select>
+	
+	<select id="guildApplicationList" resultType="dto.GuildApplicationDTO">
+	<![CDATA[
+	SELECT gapplication_id, guild_id, usr_id, usr_name, application_date
+		FROM guildapplication WHERE guild_id = #{guild_id} ORDER BY gapplication_id DESC
+		LIMIT #{startRow}, #{blockCount}
+	]]>
+	</select>
+	
+	<select id="guildApplicationCount" resultType="int">
+		SELECT count(*) FROM guildapplication WHERE guild_id = #{guild_id}
+	</select>
+	
+	<select id="guildReaderCheck" resultType="int">
+		SELECT count(*) FROM guild WHERE guild_reader = #{usr_id}
+	</select>
+	
+	<select id="guildMemberListCreate" resultType="dto.GuildMemberDTO">
+	<![CDATA[
+		SELECT m.gmember_id, m.guild_id, m.guild_name, u.usr_id, u.usr_name, m.join_date, u.usr_level, m.week_point AS contribution_point, u.usr_last_login AS lately_online, (SELECT count(*) FROM active_list WHERE usr_name = u.usr_name) AS online_state
+		FROM guildmember AS m JOIN users AS u
+		ON m.usr_id = u.usr_id
+		WHERE m.guild_id = #{guild_id} AND u.usr_id != #{usr_id} ORDER BY u.usr_level DESC, m.week_point DESC LIMIT #{startRow}, #{blockCount}
+	]]>
+	</select>
+	
+	<select id="guildAppListCreate" resultType="dto.GuildApplicationDTO">
+	<![CDATA[
+		SELECT a.gapplication_id, a.guild_id, u.usr_id, u.usr_name, a.application_date, u.usr_level, u.usr_last_login AS lately_online
+		FROM guildapplication AS a JOIN users AS u
+		ON a.usr_id = u.usr_id
+		WHERE a.guild_id = #{guild_id} AND u.usr_id != #{usr_id} ORDER BY u.usr_level DESC, a.application_date DESC LIMIT #{startRow}, #{blockCount}
+	]]>
+	</select>
+	
+	<select id="guildManagerListCount" resultType="int">
+		SELECT count(*)
+		FROM guildmember AS m JOIN users AS u
+		ON m.usr_id = u.usr_id
+		WHERE m.guild_id = #{guild_id} AND u.usr_id != #{usr_id}
+	</select>
+	
+	<delete id="guildManagerMemberExile" parameterType="java.util.HashMap">
+		DELETE FROM guildmember WHERE gmember_id = #{gmember_id} AND guild_id = #{guild_id}
+	</delete>
+	
+	<select id="guildManagerAppListCount" resultType="int">
+		SELECT count(*)
+		FROM guildapplication AS m JOIN users AS u
+		ON m.usr_id = u.usr_id
+		WHERE m.guild_id = #{guild_id}
+	</select>
+	
+	<delete id="guildManagerAppRefuse" parameterType="java.util.HashMap">
+		DELETE FROM guildapplication WHERE gapplication_id = #{gapplication_id} AND guild_id = #{guild_id}
+	</delete>
+	
+	<delete id="guildManagerAppAccept" parameterType="java.util.HashMap">
+		DELETE FROM guildapplication WHERE gapplication_id = #{gapplication_id} AND guild_id = #{guild_id}
+	</delete>
+	
+	<select id="guildAppInfo" resultType="dto.GuildApplicationDTO">
+		SELECT gapplication_id, guild_id, usr_id, usr_name, application_date
+		FROM guildapplication WHERE gapplication_id = #{gapplication_id}
+	</select>
+	
+	<select id="guildMemberInfo" resultType="dto.GuildMemberDTO">
+		SELECT gmember_id, guild_id, guild_name, usr_id, usr_name, join_date, week_point
+		FROM guildmember WHERE gmember_id = #{gmember_id}
+	</select>
+	
+</mapper>

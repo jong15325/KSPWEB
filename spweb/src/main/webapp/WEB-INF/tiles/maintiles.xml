@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE tiles-definitions PUBLIC
+       "-//Apache Software Foundation//DTD Tiles Configuration 2.1//EN"
+       "http://tiles.apache.org/dtds/tiles-config_2_1.dtd">
+
+<tiles-definitions>
+
+	<definition name="index" template="/WEB-INF/view/template/layout.jsp">
+		<put-attribute name="title" value="Spring Tiles Example" />
+		<put-attribute name="header" value="/WEB-INF/view/template/header.jsp" />
+		<put-attribute name="body" value="/WEB-INF/view/template/body.jsp" />
+		<put-attribute name="footer" value="/WEB-INF/view/template/footer.jsp" />
+	</definition>
+	
+	<definition name="freeBoardMain" extends="index">
+		<put-attribute name="title" value="freeBoardMain" />
+		<put-attribute name="body" value="/WEB-INF/view/freeboard/freeBoardMain.jsp" />
+	</definition>
+	
+	<definition name="freeBoardInsert" extends="index">
+		<put-attribute name="title" value="freeBoardInsert" />
+		<put-attribute name="body" value="/WEB-INF/view/freeboard/freeBoardInsert.jsp" />
+	</definition>
+	
+	<definition name="freeBoardUpdate" extends="index">
+		<put-attribute name="title" value="freeBoardUpdate" />
+		<put-attribute name="body" value="/WEB-INF/view/freeboard/freeBoardUpdate.jsp" />
+	</definition>
+	
+	<definition name="freeBoardContentRead" extends="index">
+		<put-attribute name="title" value="freeBoardContentRead" />
+		<put-attribute name="body" value="/WEB-INF/view/freeboard/freeBoardContentRead.jsp" />
+	</definition>
+	
+	<definition name="freeBoardSearch" extends="index">
+		<put-attribute name="title" value="freeBoardSearch" />
+		<put-attribute name="body" value="/WEB-INF/view/freeboard/freeBoardSearch.jsp" />
+	</definition>
+	
+</tiles-definitions>

@@ -1,0 +1,1811 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Survival Project</title>
+
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="font-awesome/css/font-awesome.css" rel="stylesheet">
+
+    <!-- Toastr style -->
+    <link href="css/plugins/toastr/toastr.min.css" rel="stylesheet">
+
+    <link href="css/animate.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+	<link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+	<script src="http://code.jquery.com/jquery-1.11.2.min.js"></script>
+
+</head>
+<script type="text/javascript">
+	$(document).ready(function() {
+		var search_type = $('#save_shop_type').val();
+		var search_element = $('#save_shop_element').val();
+		var search_level = $('#save_card_level').val();
+		
+		$('#search_shop_type').val(search_type);
+		$('#search_shop_element').val(search_element);
+		$('#search_card_level').val(search_level);
+		
+		if(search_type == "정령"){
+			$('#search_card_level').val('--');
+			if($("#search_card_level").attr("disabled") != "disabled"){
+				$("#search_card_level").attr("disabled","disabled");
+			}
+			
+			if($("#search_shop_element").attr("disabled") == "disabled"){
+				$("#search_shop_element").removeAttr("disabled");
+			}
+		}else if(search_type == "실버" || search_type == "아바타" || search_type == "골드포스"){
+			$('#search_shop_element').val('--');
+			$('#search_card_level').val('--');
+			if($("#search_card_level").attr("disabled") != "disabled"){
+				$("#search_card_level").attr("disabled","disabled");
+			}
+			
+			if($("#search_shop_element").attr("disabled") != "disabled"){
+				$("#search_shop_element").attr("disabled","disabled");
+			}
+			
+		}else{
+			if($("#search_card_level").attr("disabled") == "disabled"){
+				$("#search_card_level").removeAttr("disabled");
+			}
+			
+			if($("#search_shop_element").attr("disabled") == "disabled"){
+				$("#search_shop_element").removeAttr("disabled");
+			}
+		}
+		
+		$('.input-group-prepend .dropdown-menu').find('a').click(function(e) {
+			e.preventDefault();
+			var param = $(this).attr("href").replace("#","");
+			var concept = $(this).text();
+			$('.input-group-prepend span#search_concept').text(concept);
+			$('.input-group #search_param').val(param);
+		});
+		
+		//search_shop_type search_shop_element search_card_level
+		$('#search_shop_type').change(function() {
+			if(this.value == "정령"){
+				$('#search_card_level').val('--');
+				if($("#search_card_level").attr("disabled") != "disabled"){
+					$("#search_card_level").attr("disabled","disabled");
+				}
+				
+				if($("#search_shop_element").attr("disabled") == "disabled"){
+					$("#search_shop_element").removeAttr("disabled");
+				}
+			}else if(this.value == "실버" || this.value == "아바타" || this.value == "골드포스"){
+				$('#search_shop_element').val('--');
+				$('#search_card_level').val('--');
+				if($("#search_card_level").attr("disabled") != "disabled"){
+					$("#search_card_level").attr("disabled","disabled");
+				}
+				
+				if($("#search_shop_element").attr("disabled") != "disabled"){
+					$("#search_shop_element").attr("disabled","disabled");
+				}
+				
+			}else{
+				if($("#search_card_level").attr("disabled") == "disabled"){
+					$("#search_card_level").removeAttr("disabled");
+				}
+				
+				if($("#search_shop_element").attr("disabled") == "disabled"){
+					$("#search_shop_element").removeAttr("disabled");
+				}
+			}
+		});
+		
+		$('#searchBtn').bind('click', function() {
+			var search_shop_type = $("#search_shop_type").val();
+			var search_shop_element = $("#search_shop_element").val();
+			var search_card_level = $("#search_card_level").val();
+			if(search_shop_type == "--"){
+				swal({
+					  text: "카드 종류를 선택해주세요",
+					  icon: "warning",
+					})
+			}else{
+				if($("#search_card_level").attr("disabled") == "disabled"){
+					$("#search_card_level").removeAttr("disabled");
+					$('#search_card_level').val('--');
+				}
+				
+				if($("#search_shop_element").attr("disabled") == "disabled"){
+					$("#search_shop_element").removeAttr("disabled");
+					$('#search_shop_element').val('--');
+				}
+				$('#searchShopFrm').attr('action', 'userShopSearch.do');
+				$('#searchShopFrm').submit();	
+			}
+		});
+		
+	});
+	
+	function view_close(){
+		$("#myModal").css("display", "none");
+		view_shop_id = 0;
+		cardDetatilView = 0;
+	}
+	
+	function view_buy(){
+		var shop_id = view_shop_id;
+		var form_data = {
+				shop_id : shop_id,
+		};
+		$.ajax({
+			method : "post",
+			dataType : "json",
+			url : "userShopExistenceCheck.do",
+			data : form_data,
+			success : function(data){
+				if(data == 1){
+					$.ajax({
+						method : "post",
+						dataType : "json",
+						url : "userShopBuyCheck.do",
+						data : form_data,
+						success : function(data){
+							if(data != null){
+								var usr_id = data.buy_usr_id;
+								var card_price = data.card_price;
+								var card_type = data.card_type;
+								var buy_usr_name = data.buy_usr_name;
+								var buy_usr_code = data.buy_usr_code;
+								var buyPriceCheck = buy_usr_code - card_price;
+								var card_type_name = data.card_name_info;
+								var buy_usr_nSlot = data.buy_usr_nSlot;
+								var card_room = data.card_room;
+								if(buyPriceCheck >= 0){
+									var transPrice = buyPriceCheck.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+									swal({
+										title: "정말 구매하시겠습니까?",
+										text: "구매 후 잔액 : "+transPrice+" 코드",
+										icon: "warning",
+										buttons: true,
+										dangerMode: true,
+									})
+									.then((willDelete) => {
+										if (willDelete) {
+											var form_data = {
+													shop_id : shop_id,
+													card_room : card_room,
+											};
+											$.ajax({
+												method : "post",
+												dataType : "json",
+												url : "userShopBuy.do",
+												data : form_data,
+												success : function(data){
+													if(data == 1){
+														swal({
+															text: "세션이 종료되어 로그인 페이지로 이동합니다",
+															icon: "warning",
+															confirm : "OK",
+														}).then((willDelete) => {
+															location.href = "userLogin.do"
+														});
+													}else if(data == 2){
+														swal({
+															text: "다시 시도해주세요",
+															icon: "warning",
+															confirm : "OK",
+														}).then((willDelete) => {
+																location.href = "userShopMain.do"
+														});
+													}else if(data == 3){
+														swal({
+															text: "세션이 종료되어 로그인 페이지로 이동합니다",
+															  icon: "warning",
+															confirm : "OK",
+														}).then((willDelete) => {
+															location.href = "userLogin.do"
+														});
+														location.href = "userLogin.do"
+													}else if(data == 4){
+														swal({
+															text: "물품이 이미 팔렸거나 반환되었습니다.",
+															icon: "warning",
+															confirm : "OK",
+														}).then((willDelete) => {
+															location.href = "userShopMain.do"
+														});
+													}else if(data == 5){
+														swal({
+															  text: "코드가 부족합니다.",
+															  icon: "warning",
+															})
+													}else if(data == 6){
+														swal({
+															  text: "자신의 물품입니다",
+															  icon: "warning",
+															})
+													}else if(data == 7){
+														swal({
+															  text: "구매는 캐릭이 게임 대기실에 있을 경우에만 가능합니다",
+															  icon: "warning",
+															})
+													}else if(data == 8){
+														swal({
+															  text: "인벤토리가 부족합니다.",
+															  icon: "warning",
+															})
+													}else if(data == 9){
+														swal({
+															  text: "유저상점1로 올려진 아이템은 게임에서만 구매 가능합니다",
+															  icon: "warning",
+															})
+													}else if(data == 200){
+														var sell_usr_name = $("#sell_usr_name").val();
+														swal({
+															text: card_type_name+" 카드 구매완료",
+															icon: "success",
+															confirm : "OK",
+														}).then((willDelete) => {
+															location.reload(true);
+														});
+													}else{
+														swal({
+															  title: "구매에 실패하였습니다 ",
+															  text: "실패 코드 : "+data,
+															  icon: "warning",
+															})
+													}
+												},
+												error : function(request, status, error){
+													if('${sessionScope.userInfoSession == null}'){
+															swal({
+																text: "세션이 만료되었습니다.",
+																icon: "warning",
+																confirm : "OK",
+															}).then((willDelete) => {
+																location.href = "userLogin.do"
+															});
+													}else{
+														swal({
+															title : "오류가 발생하였습니다",
+															text: "오류 코드 16",
+															  icon: "warning",
+															})
+													}
+												}
+											});
+										} else {
+											swal("구매를 취소하였습니다");
+										}
+									});
+								}else{
+									swal({
+										  text: "코드가 부족합니다.",
+										  icon: "warning",
+										})
+								}
+							}else{
+								swal({
+									text: "물품이 존재하지 않습니다.",
+									icon: "warning",
+									confirm : "OK",
+								}).then((willDelete) => {
+									location.href = "userShopMain.do"
+								});
+							}
+						},
+						error : function(request, status, error){
+							if('${sessionScope.userInfoSession == null}'){
+								swal({
+									text: "세션이 만료되었습니다.",
+									icon: "warning",
+									confirm : "OK",
+								}).then((willDelete) => {
+									location.href = "userLogout.do"
+								});
+							}else{
+								swal({
+									title : "오류가 발생하였습니다",
+									text: "오류 코드 17",
+								  	icon: "warning",
+								})
+							}
+						}
+					});
+				}else{
+					swal({
+						text: "물품이 존재하지 않습니다",
+						icon: "warning",
+						confirm : "OK",
+					}).then((willDelete) => {
+						location.href = "userShopMain.do"
+					});
+				}
+			},error : function(request, status, error){
+				if('${sessionScope.userInfoSession == null}'){
+					swal({
+						text: "세션이 만료되었습니다.",
+						icon: "warning",
+						confirm : "OK",
+					}).then((willDelete) => {
+						location.href = "userLogout.do"
+					});
+				}else{
+					swal({
+						title : "오류가 발생하였습니다",
+						text: "오류 코드 17",
+					  	icon: "warning",
+					})
+				}
+			}
+		});
+	}
+	
+	function userShopViewFunction(shop_id){
+		var form_data1 = {
+				shop_id : shop_id,
+		};
+		$.ajax({
+			method : "post",
+			dataType : "json",
+			url : "userShopExistenceCheck.do",
+			data : form_data1,
+			success : function(data){
+				if(data == 1){
+					$("#myModal").empty();
+					var modal = document.getElementById('myModal');
+					modal.style.display = "block";
+					cardDetatilView = 1;
+					var buy_usr_id = '${sessionScope.userInfoSession.usr_id}';
+					var form_data2 = {
+							shop_id : shop_id,
+							buy_usr_id : buy_usr_id,
+					};
+					$.ajax({
+						method : "post",
+						dataType : "json",
+						url : "userShopCardDetailView.do",
+						data : form_data2,
+						success : function(data){
+							if(data.card_type_info != ""){
+								view_shop_id = data.shop_id;
+								var itm_gf = data.itm_trans_gf;
+								if(itm_gf < 1){
+									itm_gf = 0;
+								}
+								$("#view_shop_id").val(data.shop_id);
+					     		$("#myModal").append("<div class='modal-content animated fadeInRight'></div>");
+								$(".modal-content").append("<div class='view_close_box'></div>");
+								$(".view_close_box").append("<button type='button' id='itm_view_close' class='itm_view_close' onclick='return view_close()'></button>");
+								$(".modal-content").append("<div class='itm_option_info'></div>");
+								$(".modal-content").append("<div class='itm_option_box'></div>");
+								$(".itm_option_info").append("<span class='itm_type_info'>타입</span>");
+								$(".itm_option_info").append("<span class='itm_name_info'>명칭</span>");
+								$(".itm_option_info").append("<span class='itm_channel_info'>채널제한</span>");
+								$(".itm_option_info").append("<span class='itm_element_info'>속성</span>");
+								$(".itm_option_info").append("<span class='itm_gf_info'>남은 일수</span>");
+								$(".itm_option_box").append("<span class='itm_type_span'>"+data.card_type_info+"</span>");
+								$(".itm_option_box").append("<span class='itm_name_span'>"+data.card_name_info+"</span>");
+								$(".itm_option_box").append("<span class='itm_channel_span'>"+data.card_channl_info+"</span>");
+								$(".itm_option_box").append("<span class='itm_element_span'>"+data.card_element+"</span>");
+								$(".modal-content").append("<div class='itm_skill_box'></div>");
+								if(data.card_skill1 != "")
+								$(".itm_skill_box").append("<span class='itm_skill1'>1. "+data.card_skill1+"</span>");
+								if(data.card_skill2 != "")
+								$(".itm_skill_box").append("<span class='itm_skill2'>2. "+data.card_skill2+"</span>");
+								
+								if(data.card_type_info == "마법" || data.card_type_info == "무기" || data.card_type_info == "방어구"){
+									$(".itm_option_box").append("<span class='itm_gf_span'>"+itm_gf+"</span>");
+									if(data.itm_trans_gf > 0){
+										/* $(".modal-content").append("<img class='itm_view_gold' alt='image' class='img-fluid' src='img/CARD/etc/gold.png'/>"); */
+										$(".modal-content").append("<div class='goldBorderBlock_view'></div>");
+										$(".modal-content").append("<span class='itm_view_gf_date'>"+data.card_date+"</span>");
+									}else{
+										$(".modal-content").append("<div class='blackBorderBlock_view'></div>");
+									}
+								}else if(data.card_type_info == "실버"){
+									if(data.card_level > 0){
+										$(".itm_gf_info").html("남은 횟수");
+										$(".itm_option_box").append("<span class='itm_gf_span'>"+data.card_date+"</span>");
+									}else{
+										if(data.itm_trans_gf > 1500){
+											$(".itm_option_box").append("<span class='itm_gf_span'>"+data.itm_trans_gf+"</span>");
+										}else{
+											$(".itm_option_box").append("<span class='itm_gf_span'>"+data.itm_trans_gf+"</span>");
+											$(".modal-content").append("<span class='itm_view_sv_date'>"+data.card_date+"</span>");
+										}
+									}
+									$(".modal-content").append("<div class='silverBorderBlock_view'></div>");
+								}else if(data.card_type_info == "골드포스"){
+									$(".itm_option_box").append("<span class='itm_gf_span'>"+data.card_date+"</span>");
+									/* $(".modal-content").append("<img class='itm_view_gold' alt='image' class='img-fluid' src='img/CARD/etc/gold.png'/>"); */
+									$(".modal-content").append("<div class='goldBorderBlock_view'></div>");
+								}else if(data.card_type_info == "아바타"){
+									$(".itm_option_box").append("<span class='itm_gf_span'>"+data.card_date+"</span>");
+									$(".modal-content").append("<div class='brassBorderBlock_view'></div>");
+								}else if(data.card_type_info == "펫"){
+									$(".itm_option_box").append("<span class='itm_gf_span'>"+data.card_date+"</span>");
+									/* $(".modal-content").append("<img class='itm_view_gold' alt='image' class='img-fluid' src='img/CARD/etc/silver.png'/>"); */
+									$(".modal-content").append("<div class='silverBorderBlock_view'></div>");
+								}else{
+									$(".modal-content").append("<div class='element_count_view_Box'></div>");
+									$(".element_count_view_Box").append("<span class='element_count_view'>"+data.spirit_count+"</span>");
+									$(".itm_option_box").append("<span class='itm_gf_span'>"+data.card_date+"</span>");
+								}
+								
+								if(data.card_skill > 0){
+									if(data.itm_trans_gf > 0){
+										$(".modal-content").append("<div class='card_list_skill_back_view_gold'></div>");
+									}else{
+										$(".modal-content").append("<div class='card_list_skill_back_view'></div>");
+									}
+									$(".modal-content").append("<span class='card_list_skill_view'>S</span>");
+									/* $(".modal-content").append("<img class='itm_view_skill_img' alt='image' class='img-fluid' src='img/CARD/etc/s.png'/>"); */
+								}
+								
+								$(".modal-content").append("<img class='img-fluid itm_view_img' alt='image' src='"+data.card_img_path+"'/>");
+								if(data.card_type_info == "마법" || data.card_type_info == "무기" || data.card_type_info == "방어구"){
+									if(data.card_skill > 0){
+										$(".modal-content").append("<img id='card_template' alt='image' class='img-fluid' src='img/CARD/etc/card_template2.png'/>");
+									}else{
+										$(".modal-content").append("<img id='card_template' alt='image' class='img-fluid' src='img/CARD/etc/card_template3.png'/>");
+									}	
+								}else{
+									$(".modal-content").append("<img id='card_template' alt='image' class='img-fluid' src='img/CARD/etc/card_template4.png'/>");
+								}
+								
+								$(".modal-content").append("<div class='view_foot_box'></div>");  /* ','+data.shop_element+','+data.card_level+ */
+								if(data.card_room > -1){
+									$(".view_foot_box").append("<button type='button' id='itm_foot_buyDisable' class='itm_foot_buyDisable'></button>");
+								}else{
+									$(".view_foot_box").append("<button type='button' id='itm_foot_buy' class='itm_foot_buy' onclick='return view_buy()'></button>");
+								}
+								$(".view_foot_box").append("<button type='button' id='itm_foot_close' class='itm_foot_close' onclick='return view_close()'></button>");
+								$(".modal-content").append("<div class='usershop_buy_userInfo_box'></div>");
+								$(".usershop_buy_userInfo_box").append("<div class='usershop_sell_Info_box'></div>");
+								$(".usershop_buy_userInfo_box").append("<div class='usershop_buy_Info_box'></div>");
+								$(".usershop_sell_Info_box").append("<img class='usershop_sell_level_img' alt='image' src='"+data.level_img_path+"'/>");
+								$(".usershop_sell_Info_box").append("<span class='usershop_sell_name_span'>"+data.usr_name+"</span>"); 
+								$(".usershop_buy_userInfo_box").append("<i class='fa fa-arrow-right usershop_buy_right'></i>");
+								$(".usershop_buy_Info_box").append("<span class='usershop_buy_name_span'>"+data.buy_usr_name+"</span>");
+								$(".usershop_buy_Info_box").append("<img class='usershop_buy_level_img' alt='image' src='"+data.buy_usr_img_path+"'/>");
+								$(".modal-content").append("<div class='usershop_buy_priceInfo_box'></div>");
+								var price = data.card_price;
+								var transPrice = price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+								$(".usershop_buy_priceInfo_box").append("<span class='usershop_buy_price_span'>"+transPrice+"</span>");
+								
+								if(data.card_price < 10000){
+									$(".usershop_buy_price_span").css("color","#8CAA00");
+								}else if(data.card_price >= 10000 && data.card_price <= 99999){
+									$(".usershop_buy_price_span").css("color","#0075A5");
+								}else if(data.card_price >= 100000 && data.card_price <= 999999){
+									$(".usershop_buy_price_span").css("color","#CE00A5");
+								}else if(data.card_price >= 1000000 && data.card_price <= 9999999){
+									$(".usershop_buy_price_span").css("color","#008A00");
+								}else if(data.card_price >= 10000000 && data.card_price <= 99999999){
+									$(".usershop_buy_price_span").css("color","#EF8E00");
+								}else{
+									$(".usershop_buy_price_span").css("color","#BD0000");
+								}
+								$(".usershop_buy_priceInfo_box").append("<span class='usershop_buy_code_span'>코드</span>");
+								$(".modal-content").append("<img id='usershop_buy_info_img' alt='image' class='usershop_buy_info_img' src='img/CARD/etc/usershop_buy_info.png'/>");
+							}else{
+								swal({
+									text: "물품이 존재하지 않습니다",
+									icon: "warning",
+									confirm : "OK",
+								}).then((willDelete) => {
+									location.href = "userShopMain.do"
+								});
+							}
+						}, 
+						error : function(request, status, error){
+							alert('${sessionScope.userInfoSession.usr_name}');
+							if('${sessionScope.userInfoSession == null}'){
+								swal({
+									text: "세션이 만료되었습니다",
+									icon: "warning",
+									confirm : "OK",
+								}).then((willDelete) => {
+									location.href = "userLogout.do"
+								});
+							}else{
+								swal({
+									title : "오류가 발생하였습니다",
+									text: "오류 코드 18",
+								  	icon: "warning",
+								})
+							}
+						}
+					});
+				}else {
+					swal({
+						text: "물품이 존재하지 않습니다",
+						icon: "warning",
+						confirm : "OK",
+					}).then((willDelete) => {
+						location.href = "userShopMain.do"
+					});
+				}
+			},error : function(request, status, error){
+				if('${sessionScope.userInfoSession == null}'){
+					swal({
+						text: "세션이 만료되었습니다.",
+						icon: "warning",
+						confirm : "OK",
+					}).then((willDelete) => {
+						location.href = "userLogout.do"
+					});
+				}else{
+					swal({
+						title : "오류가 발생하였습니다",
+						text: "오류 코드 17",
+					  	icon: "warning",
+					})
+				}
+			}
+		});
+	}
+	
+</script>
+<style type="text/css">
+.usershop_sell_level_img{
+	position: absolute;
+    z-index: 1;
+    color: wheat;
+    font-weight: bold;
+    margin-top: 41px;
+    margin-left: 14px;
+}
+
+.usershop_sell_name_span{
+	position: absolute;
+    z-index: 1;
+    color: wheat;
+    font-weight: bold;
+    margin-top: 39px;
+    margin-left: 33px;
+}
+
+.usershop_buy_right{
+	position: absolute;
+    z-index: 1;
+    color: wheat;
+    font-weight: bold;
+    margin-top: 41px;
+    margin-left: 119px;
+}
+
+
+.usershop_buy_priceInfo_box{
+	width: 248px;
+    position: absolute;
+    height: 44px;
+    margin-top: 412px;
+    text-align: center;
+}
+
+.usershop_buy_userInfo_box{
+	width: 248px;
+    position: absolute;
+    height: 30px;
+    margin-top: 333px;
+}
+
+.usershop_buy_level_img{
+    position: absolute;
+    z-index: 1;
+    width: 12px;
+    margin-top: 42px;
+    margin-left: 136px;
+}
+.usershop_buy_name_span{
+ 	position: absolute;
+    z-index: 1;
+    color: wheat;
+    font-weight: bold;
+    margin-top: 40px;
+    margin-left: 153px;
+
+}
+.usershop_buy_price_span{
+	z-index: 1;
+    color: wheat;
+    font-weight: bold;
+    margin-top: 12px;
+    position: relative;
+}
+.usershop_buy_code_span{
+    z-index: 1;
+    margin-top: 16px;
+    font-weight: bold;
+    color: wheat;
+    position: relative;
+    margin-left: 8px;
+}
+
+.usershop_buy_info_img{
+	position: absolute;
+	margin-top: 351px;
+    width: 248px;
+	border-radius: 7px;
+}
+
+.product-price-left{
+	left:0;
+	font-size: 14px;
+    font-weight: 600;
+    color: #ffffff;
+    background-color: cornflowerblue;
+    padding: 6px 12px;
+    position: absolute;
+    top: -32px;
+}
+
+.product-price-top{
+	left:0;
+	font-size: 14px;
+    font-weight: 600;
+    color: #ffffff;
+    background-color: cornflowerblue;
+    padding: 6px 12px;
+    position: absolute;
+    top: -32px;
+}
+
+.img-fluid{
+	width : 100%;
+}
+
+.shopCard-img{
+ 	width:60px;
+ 	height: 111px;
+ 	position: relative;
+ 	z-index: 3;
+ 	margin-left: 1px;
+    margin-top: 1px;
+}
+
+.shopCardView-img{
+ 	width:60px;
+}
+
+.card_info_box{
+ 	width:60px;
+ 	margin:auto;
+ 	
+}
+
+.modal {
+	display: none; /* Hidden by default */
+	position: fixed; /* Stay in place */
+	z-index: 1; /* Sit on top */
+	left: 0;
+	top: 0;
+	width: 100%; /* Full width */
+	height: 100%; /* Full height */
+	overflow: auto; /* Enable scroll if needed */
+	background-color: rgb(0,0,0); /* Fallback color */
+	background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+    
+/* Modal Content/Box */
+.modal-content {
+	background-color: #fefefe;
+	margin: 15% auto; /* 15% from the top and centered */
+	padding: 0px;
+	border: 1px solid #888;
+	width: 250px; /* Could be more or less, depending on screen size */        
+	height:340px;
+	border-radius: 12px;
+	margin-bottom: 20px;               
+}
+
+/* The Close Button */
+.close {
+	color: #aaa;
+	float: right;
+	font-size: 28px;
+	font-weight: bold;
+}
+.close:hover,
+.close:focus {
+	color: black;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.itm_gf_date{
+    position: absolute;
+    background: #5A2400;
+    border: 2px solid #5A2400;
+    border-radius: 5px;
+    font-size: 10px;
+    color: #FFEB29;
+    margin-top: 2px;
+    margin-left: 2px;
+}
+
+.itm_skill_img{
+    width: 12px;
+    height: 16px;
+    position: absolute;
+    margin-top: 2px;
+    margin-left: 26px;
+}
+.itm_gold{
+	position: absolute;
+    width: 40px;
+    z-index: 1;
+}
+
+.itm_silver{
+    position: absolute;
+    width: 40px;
+    height: 77px;
+    z-index: 1;
+}
+
+.itm_type_span{
+    position: absolute;
+    margin-top: 1px;
+    width: 98%;
+    color: #E7DFCE;
+    text-align: right;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.itm_name_span{
+    position: absolute;
+    margin-top: 21px;
+    width: 98%;
+    color: #E7DFCE;
+    text-align: right;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.itm_channel_span{
+    position: absolute;
+    margin-top: 42px;
+    width: 98%;
+    color: #E7DFCE;
+    text-align: right;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.itm_element_span{
+    position: absolute;
+    margin-top: 64px;
+    width: 98%;
+    color: #E7DFCE;
+    text-align: right;
+	font-size: 12px;
+	font-weight: 500;
+}
+
+.itm_gf_span{
+    position: absolute;
+    margin-top: 84px;
+    width: 98%;
+    color: #FFDB00;
+    text-align: right;
+   	font-weight: 600;
+}
+
+.itm_view_gf_date{
+    position: absolute;
+    background: #5A2400;
+    border: 2px solid #5A2400;
+    border-radius: 3px;
+    font-size: 12px;
+    color: #FFEB29;
+    margin-top: 45px;
+    margin-left: 11px;
+    z-index: 2;
+}
+
+.itm_view_sv_date{
+    position: absolute;
+    background: #182839;
+    font-size: 14px;
+    color: #EFEFF7;
+    margin-top: 45px;
+    margin-left: 8px;
+    z-index: 2;
+    width: 34px;
+    height:20px;
+    text-align: center;
+    border-right: 1px solid #EFEFF7;
+    border-bottom: 1px solid #EFEFF7;
+    border-bottom-right-radius: 5px;
+}
+
+.itm_view_skill_img{
+    width: 12px;
+    height: 16px;
+    position: absolute;
+    margin-top: 46px;
+    margin-left: 51px;
+    z-index: 2;
+    border-radius: 2px;
+}
+.itm_view_gold{
+	position: absolute;
+    width: 63px;
+    height: 112px;
+    z-index: 1;
+    margin-top: 42px;
+    margin-left: 6px;
+    z-index: 3;
+    border-radius: 2px;
+}
+
+.itm_view_img{
+	width: 59px;
+	height: 101px;
+    margin-top: 45px;
+    margin-left: 8px;
+    position: absolute;
+    z-index: 1;
+}
+
+.itm_option_box{
+	height: 100px;
+    position: absolute;
+    margin-top: 44px;
+    width: 240px;
+}
+
+#card_template{
+	border-radius: 9px;
+}
+
+.itm_view_close{
+ 	background-image: url(img/CARD/etc/view_close.png);
+    margin-top: 6px;
+    width: 25px;
+    height: 25px;
+    float: right;
+    border: 0;
+    outline: 0;
+}
+
+.itm_view_close:hover{
+ 	background-image: url(img/CARD/etc/view_close_hover.png);
+ 	cursor:pointer;
+}
+
+.itm_view_close:active{
+	background-image: url(img/CARD/etc/view_close_active.png);
+	cursor:pointer;
+}
+
+.view_close_box{
+	position: absolute;
+    width: 240px;;
+    height: 33px;
+}
+
+.itm_foot_close{
+ 	background-image: url(img/CARD/etc/btn1_default.png);
+    margin-top: 6px;
+    margin-right: 27px;
+    width: 81px;
+    height: 23px;
+    float: right;
+    border: 0;
+    outline: 0;
+}
+
+.itm_foot_close:hover{
+ 	background-image: url(img/CARD/etc/btn1_hover.png);
+ 	cursor:pointer;
+}
+
+.itm_foot_close:active{
+	background-image: url(img/CARD/etc/btn1_active.png);
+	cursor:pointer;
+}
+
+.itm_foot_buy{
+ 	background-image: url(img/CARD/etc/btn2_default.png);
+    margin-top: 6px;
+    margin-left: 36px;
+    width: 80px;
+    height: 23px;
+    float: left;
+    border: 0;
+    outline: 0;
+}
+
+.itm_foot_buy:hover{
+ 	background-image: url(img/CARD/etc/btn2_hover.png);
+ 	cursor:pointer;
+}
+
+.itm_foot_buy:active{
+	background-image: url(img/CARD/etc/btn2_active.png);
+	cursor:pointer;
+}
+
+.view_foot_box{
+	position: absolute;
+    width: 240px;
+    height: 33px;
+    margin-top: 303px;
+}
+
+.itm_skill_box{
+    height: 100px;
+    position: absolute;
+    margin-top: 195px;
+    width: 226px;
+    color: #BDBAB5;
+    margin-left: 15px;
+    font-weight: 600;
+}
+
+.itm_skill1{
+    position: absolute;
+    font-size: 12px;
+    margin-top: 2px;
+	font-weight: 600;
+}
+
+.itm_skill2{
+    position: absolute;
+    font-size: 12px;
+    margin-top: 19px;
+	font-weight: 600;
+}
+
+.itm_option_info{
+ 	height: 91px;
+    width: 130px;
+    position: absolute;
+    margin-top: 44px;
+    color: #BDBAB5;
+    margin-left: 81px;
+    font-weight: 500;
+}
+
+.itm_type_info{
+    position: absolute;
+    margin-top: 1px;
+    width: 98%;
+    color: #E7DFCE;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.itm_name_info{
+    position: absolute;
+    margin-top: 21px;
+    width: 98%;
+    color: #E7DFCE;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.itm_channel_info{
+    position: absolute;
+    margin-top: 42px;
+    width: 98%;
+    color: #E7DFCE;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.itm_element_info{
+    position: absolute;
+    margin-top: 64px;
+    width: 98%;
+    color: #E7DFCE;
+    text-align: left;
+	font-size: 12px;
+	font-weight: 500;
+}
+
+.itm_gf_info{
+    position: absolute;
+    margin-top: 84px;
+    width: 98%;
+    color: #E7DFCE;
+    text-align: left;
+    font-weight: 500;
+    font-size : 12px;
+}
+
+.card_list_gfDate{
+    position: absolute;
+    background: #5A2400;
+    font-size: 14px;
+    color: #FFEB29;
+    margin-top: 1px;
+    margin-left: 1px;
+    z-index: 5;
+    width: 34px;
+    height:20px;
+    text-align: center;
+    border-right: 1px solid #FFEB29;
+    border-bottom: 1px solid #FFEB29;
+    border-bottom-right-radius: 5px;
+}
+
+.card_list_svDate{
+   	position: absolute;
+    background: #182839;
+    font-size: 14px;
+    color: #EFEFF7;
+    margin-top: 1px;
+    margin-left: 1px;
+    z-index: 4;
+    width: 34px;
+    height:20px;
+    text-align: center;
+    border-right: 1px solid #EFEFF7;
+    border-bottom: 1px solid #EFEFF7;
+    border-bottom-right-radius: 5px;
+}
+
+
+.card_list_skill{
+    width: 15px;
+    height: 20px;
+    position: absolute;
+    margin-top: -1px;
+    margin-left: 47px;
+    z-index: 5;
+    border-radius: 2px;
+    font-size: 14px;
+    text-align: center;
+    background: -webkit-linear-gradient(left top, #E7FB08, #10AAE7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color : #FF0000;
+    font-weight: bolder;
+}
+
+.card_list_skill_back{
+	width: 15px;
+    height: 20px;
+    background: #001c31;
+    position: absolute;
+    margin-top: 1px;
+    margin-left: 46px;
+    z-index: 4;
+    border-left: 1px solid #292821;
+    border-bottom: 1px solid #292821;
+    border-bottom-left-radius: 5px;
+}
+
+.card_list_skill_back_gold{
+	width: 15px;
+    height: 20px;
+    background: #001c31;
+    position: absolute;
+    margin-top: 1px;
+    margin-left: 46px;
+    z-index: 4;
+    border-left: 1px solid #FFEB29;
+    border-bottom: 1px solid #FFEB29;
+    border-bottom-left-radius: 5px;
+}
+
+.card_list_skill_view{
+    width: 15px;
+    height: 20px;
+    position: absolute;
+    margin-top: 43px;
+    margin-left: 53px;
+    z-index: 5;
+    border-radius: 2px;
+    font-size: 14px;
+    text-align: center;
+    background: -webkit-linear-gradient(left top, #E7FB08, #10AAE7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color : #FF0000;
+    font-weight: bolder;
+}
+
+.card_list_skill_back_view{
+	width: 15px;
+    height: 20px;
+    background: #001c31;
+    position: absolute;
+    margin-top: 45px;
+    margin-left: 52px;
+    z-index: 4;
+    border-left: 1px solid #292821;
+    border-bottom: 1px solid #292821;
+    border-bottom-left-radius: 5px;
+}
+
+.card_list_skill_back_view_gold{
+	width: 15px;
+    height: 20px;
+    background: #001c31;
+    position: absolute;
+    margin-top: 45px;
+    margin-left: 52px;
+    z-index: 4;
+    border-left: 1px solid #FFEB29;
+    border-bottom: 1px solid #FFEB29;
+    border-bottom-left-radius: 5px;
+}
+
+.card_list_gold{
+	position: absolute;
+    width: 61px;
+    height: 113px;
+    z-index: 3;
+    border-radius: 2px;
+}
+
+.element_count_box{
+    position: absolute;
+    width: 60px;
+    margin-top: 84px;
+    text-align: center;
+    margin-left: 2px;
+    z-index: 4;
+}
+
+.element_count{
+  	font-size: 11px;
+    font-weight: bold;
+}
+
+.element_count_view_Box{
+    position: absolute;
+    width: 56px;
+    margin-top: 121px;
+    text-align: center;
+    margin-left: 10px;
+    z-index: 3;
+}
+
+.element_count_view{
+	font-size: 11px;
+    font-weight: bold;
+}
+
+.product-desc{
+ 	padding-right: 3px;
+    padding-left: 3px;
+    padding-bottom: 10px;
+    padding-top: 10px;
+}
+
+.usr_info_box{
+	text-align: center;
+}
+.usr_name_span{
+	font-weight: bold;
+}
+
+.usershop_price_box{
+	text-align: center;
+}
+
+.usershop_price{
+	font-weight: bold;
+}
+
+.goldBorderBlock {
+	/* position: relative; */
+	margin: auto;
+	z-index: 1;
+	position: absolute;
+    width: 62px;
+    height: 113px;
+    z-index: 3;
+    border-radius: 2px;
+}
+
+.goldBorderBlock:before{
+	content: '';
+	position: absolute;
+	left: -2px;
+	top: -2px;
+	/* background: linear-gradient(140deg, #f7c400, #f4e000, #f4eb00,#ffffff, #f4f700, #f7c400, #f7c400, #f4bf00, #f6d500, #f7c400); */
+	background: linear-gradient(140deg, #f7c400, #f7c400, #f7c400,#ffffff, #d6ae31, #d6ae31, #d6ae31, #c69618, #c69618, #c69618);
+	background-size: 400%;
+	width: calc(100% + 4px);
+	height: calc(100% + 4px);
+	z-index: -1;
+	animation: steam 7s linear infinite;
+	border-radius: 1px;
+}
+
+@keyframes steam {
+	0% {
+		background-position: 0 0;
+	}
+	50% {
+		background-position: 400% 0;
+	}
+	100% {
+		background-position: 0 0;
+	}
+}
+
+.goldBorderBlock:after {
+	filter: blur(10px);
+}
+
+.goldBorderBlock_view {
+    margin: auto;
+    position: absolute;
+    width: 61px;
+    height: 103px;
+    z-index: 1;
+    border-radius: 2px;
+    margin-top: 44px;
+    margin-left: 7px;
+}
+
+.goldBorderBlock_view:before{
+	content: '';
+	position: absolute;
+	left: -2px;
+	top: -2px;
+	/* background: linear-gradient(140deg, #f7c400, #f4e000, #f4eb00,#ffffff, #f4f700, #f7c400, #f7c400, #f4bf00, #f6d500, #f7c400); */
+	background: linear-gradient(140deg, #f7c400, #f7c400, #f7c400,#ffffff, #d6ae31, #d6ae31, #d6ae31, #c69618, #c69618, #c69618);
+	background-size: 400%;
+	width: calc(100% + 4px);
+	height: calc(100% + 4px);
+	z-index: -1;
+	animation: steam 7s linear infinite;
+	border-radius: 1px;
+}
+
+@keyframes steam {
+	0% {
+		background-position: 0 0;
+	}
+	50% {
+		background-position: 400% 0;
+	}
+	100% {
+		background-position: 0 0;
+	}
+}
+
+.goldBorderBlock_view:after {
+	filter: blur(10px);
+}
+
+.silverBorderBlock {
+	/* position: relative; */
+	margin: auto;
+	z-index: 1;
+	position: absolute;
+    width: 62px;
+    height: 113px;
+    z-index: 3;
+    border-radius: 2px;
+}
+
+.silverBorderBlock:before{
+	content: '';
+	position: absolute;
+	left: -2px;
+	top: -2px;
+	background: linear-gradient(140deg, #738aa5, #738aa5, #738aa5,#ffffff, #738aa5, #738aa5, #738aa5, #42597b, #42597b, #42597b);
+	background-size: 400%;
+	width: calc(100% + 4px);
+	height: calc(100% + 4px);
+	z-index: -1;
+	animation: steam 7s linear infinite;
+	border-radius: 1px;
+}
+
+@keyframes steam {
+	0% {
+		background-position: 0 0;
+	}
+	50% {
+		background-position: 400% 0;
+	}
+	100% {
+		background-position: 0 0;
+	}
+}
+
+.silverBorderBlock:after {
+	filter: blur(10px);
+}
+
+.silverBorderBlock_view {
+    margin: auto;
+    position: absolute;
+    width: 61px;
+    height: 103px;
+    z-index: 1;
+    border-radius: 2px;
+    margin-top: 44px;
+    margin-left: 7px;
+}
+
+.silverBorderBlock_view:before{
+	content: '';
+	position: absolute;
+	left: -2px;
+	top: -2px;
+	/* background: linear-gradient(140deg, #f7c400, #f4e000, #f4eb00,#ffffff, #f4f700, #f7c400, #f7c400, #f4bf00, #f6d500, #f7c400); */
+	background: linear-gradient(140deg, #738aa5, #738aa5, #738aa5,#ffffff, #738aa5, #738aa5, #738aa5, #42597b, #42597b, #42597b);
+	background-size: 400%;
+	width: calc(100% + 4px);
+	height: calc(100% + 4px);
+	z-index: -1;
+	animation: steam 7s linear infinite;
+	border-radius: 1px;
+}
+
+@keyframes steam {
+	0% {
+		background-position: 0 0;
+	}
+	50% {
+		background-position: 400% 0;
+	}
+	100% {
+		background-position: 0 0;
+	}
+}
+
+.silverBorderBlock_view:after {
+	filter: blur(10px);
+}
+
+.brassBorderBlock {
+	/* position: relative; */
+	margin: auto;
+	z-index: 1;
+	position: absolute;
+    width: 62px;
+    height: 113px;
+    z-index: 3;
+    border-radius: 2px;
+}
+
+.brassBorderBlock:before{
+	content: '';
+	position: absolute;
+	left: -2px;
+	top: -2px;
+	background: linear-gradient(140deg, #ffaa42, #ffaa42, #ffaa42, #ffffff, #ffa229, #ffa229, #ffa229, #bd6900, #bd6900, #bd6900);
+	background-size: 400%;
+	width: calc(100% + 4px);
+	height: calc(100% + 4px);
+	z-index: -1;
+	animation: steam 7s linear infinite;
+	border-radius: 1px;
+}
+
+@keyframes steam {
+	0% {
+		background-position: 0 0;
+	}
+	50% {
+		background-position: 400% 0;
+	}
+	100% {
+		background-position: 0 0;
+	}
+}
+
+.brassBorderBlock:after {
+	filter: blur(10px);
+}
+
+.brassBorderBlock_view {
+    margin: auto;
+    position: absolute;
+    width: 61px;
+    height: 103px;
+    z-index: 1;
+    border-radius: 2px;
+    margin-top: 44px;
+    margin-left: 7px;
+}
+
+.brassBorderBlock_view:before{
+	content: '';
+	position: absolute;
+	left: -2px;
+	top: -2px;
+	/* background: linear-gradient(140deg, #f7c400, #f4e000, #f4eb00,#ffffff, #f4f700, #f7c400, #f7c400, #f4bf00, #f6d500, #f7c400); */
+	background: linear-gradient(140deg, #ffaa42, #ffaa42, #ffaa42, #ffffff, #ffa229, #ffa229, #ffa229, #bd6900, #bd6900, #bd6900);
+	background-size: 400%;
+	width: calc(100% + 4px);
+	height: calc(100% + 4px);
+	z-index: -1;
+	animation: steam 7s linear infinite;
+	border-radius: 1px;
+}
+
+@keyframes steam {
+	0% {
+		background-position: 0 0;
+	}
+	50% {
+		background-position: 400% 0;
+	}
+	100% {
+		background-position: 0 0;
+	}
+}
+
+.brassBorderBlock_view:after {
+	filter: blur(10px);
+}
+
+.blackBorderBlock {
+	/* position: relative; */
+	margin: auto;
+	z-index: 1;
+	position: absolute;
+    width: 62px;
+    height: 113px;
+    z-index: 3;
+    border-radius: 2px;
+}
+
+.blackBorderBlock:before{
+	content: '';
+	position: absolute;
+	left: -2px;
+	top: -2px;
+	background: linear-gradient(140deg, #292821, #292821, #292821, #292821, #292821, #292821, #292821, #292821, #292821, #292821);
+	background-size: 400%;
+	width: calc(100% + 4px);
+	height: calc(100% + 4px);
+	z-index: -1;
+	animation: steam 7s linear infinite;
+	border-radius: 1px;
+}
+
+@keyframes steam {
+	0% {
+		background-position: 0 0;
+	}
+	50% {
+		background-position: 400% 0;
+	}
+	100% {
+		background-position: 0 0;
+	}
+}
+
+.blackBorderBlock:after {
+	filter: blur(10px);
+}
+
+.blackBorderBlock_view {
+    margin: auto;
+    position: absolute;
+    width: 61px;
+    height: 103px;
+    z-index: 1;
+    border-radius: 2px;
+    margin-top: 44px;
+    margin-left: 7px;
+}
+
+.blackBorderBlock_view:before{
+	content: '';
+	position: absolute;
+	left: -2px;
+	top: -2px;
+	/* background: linear-gradient(140deg, #f7c400, #f4e000, #f4eb00,#ffffff, #f4f700, #f7c400, #f7c400, #f4bf00, #f6d500, #f7c400); */
+	background: linear-gradient(140deg, #292821, #292821, #292821,#292821, #292821, #292821, #292821, #292821, #292821, #292821);
+	background-size: 400%;
+	width: calc(100% + 4px);
+	height: calc(100% + 4px);
+	z-index: -1;
+	animation: steam 7s linear infinite;
+	border-radius: 1px;
+}
+
+@keyframes steam {
+	0% {
+		background-position: 0 0;
+	}
+	50% {
+		background-position: 400% 0;
+	}
+	100% {
+		background-position: 0 0;
+	}
+}
+
+.blackBorderBlock_view:after {
+	filter: blur(10px);
+}
+</style>
+<body>
+
+<div id="wrapper">
+	<%@ include file="../template/left_column.jsp"%>
+    <div id="page-wrapper" class="gray-bg">
+	<%@ include file="../template/header.jsp"%>
+        <div class="row wrapper border-bottom white-bg page-heading">
+			<div class="col-lg-10">
+				<h2>유저 상점</h2>
+					<ol class="breadcrumb">
+						<li class="breadcrumb-item">
+                            <a href="index.do">메인</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <span>유저 상점</span>
+                        </li>
+                        <li class="breadcrumb-item active">
+                            <strong>리스트</strong>
+                        </li>
+                    </ol>
+                </div>
+            <div class="col-lg-2">
+
+            </div>
+        </div>
+        	<div class="wrapper wrapper-content" style="padding-bottom:0px;">
+        	<div class="ibox-content m-b-sm border-bottom">
+        	<form name="searchShopFrm" id="searchShopFrm" method="post">
+        		<div class="form-group row">
+					<div class="col-sm-3">
+						<span>카드 종류</span>
+						<select id="search_shop_type" class="form-control m-b" name="search_shop_type">
+							<option>--</option>
+							<option>방패</option>
+							<option>갑옷</option>
+							<option>펜던트</option>
+							<option>부츠</option>
+							<option>칼</option>
+							<option>도끼</option>
+							<option>지팡이</option>
+							<option>활</option>
+							<option>마법</option>
+							<option>정령</option>
+							<option>실버</option>
+							<option>아바타</option>
+							<option>골드포스</option>
+						</select>
+					</div>
+					<div class="col-sm-3">
+					<span>속성</span>
+						<select id="search_shop_element" class="form-control m-b" name="search_shop_element">
+							<option>--</option>
+							<option>물</option>
+							<option>불</option>
+							<option>흙</option>
+							<option>바람</option>
+						</select>
+					</div>
+					<div class="col-sm-2">
+					<span>레벨</span>
+						<select id="search_card_level" class="form-control m-b" name="search_card_level" style="padding-right: 3px;">
+							<option>--</option>
+							<option>1</option>
+							<option>2</option>
+							<option>3</option>
+							<option>4</option>
+							<option>5</option>
+							<option>6</option>
+							<option>7</option>
+							<option>8</option>
+							<option>9</option>
+						</select>
+					</div>
+					<div class="col-sm-3" style="text-align: center;">
+						<div>&nbsp;</div>
+						<button id="searchBtn" type="button" class="btn btn-w-m btn-info">조회</button>
+					</div>
+				</div>
+        	</form>
+        	<form name="searchPageMoveFrm" id="searchPageMoveFrm" method="post">
+        		<input type="hidden" id = "save_shop_type" name = "search_shop_type" value="${map.save_shop_type}">
+				<input type="hidden" id = "save_shop_element" name = "search_shop_element" value="${map.save_shop_element}">
+				<input type="hidden" id = "save_card_level" name = "search_card_level" value="${map.save_card_level}">
+        	</form>
+        	<input id="buy_usr_id" type="hidden" value="${sessionScope.userInfoSession.usr_id}">
+			</div>
+		</div>
+        <div class="wrapper wrapper-content animated fadeInRight">
+       	 	<div class="ibox-content">
+        		<c:choose>
+        			<c:when test="${aList != null}">
+           	 			<div class="row">
+            				<c:forEach items="${aList}" var="UserShopDTO">
+            					<%-- <input class="nowViewValue-${UserShopDTO.shop_id}" type=text value="${UserShopDTO.shop_id}"> --%>
+            					<c:url var="content" value="userShopSearch.do">
+            						<c:param name="currentPage" value="${userShopPageDto.currentPage}" />
+								</c:url>
+                				<div class="col-md-4" style="max-width: 50%">
+                    				<div class="ibox">
+                        				<div id="product-box" class="ibox-content product-box" style="position:relative; cursor:pointer;" onclick="userShopViewFunction(${UserShopDTO.shop_id})">
+                            				<div style="background:white; margin:5px; margin-bottom:0px;">
+                            					<div class="card_info_box" style="margin:auto; max-width: 100%">
+        											<c:choose>
+        												<c:when test="${UserShopDTO.card_type_info != '정령'}">
+        													<c:choose>
+        														<c:when test="${UserShopDTO.card_type_info == '실버'}">
+        															<div class="silverBorderBlock"></div>
+        															<c:if test="${UserShopDTO.card_level == 0}">
+        																<span class="card_list_svDate">${UserShopDTO.card_date}</span>
+        															</c:if>
+        														</c:when>
+        														<c:when test="${UserShopDTO.card_type_info == '골드포스'}">
+        															<div class="goldBorderBlock"></div>
+        														</c:when>
+        														<c:when test="${UserShopDTO.card_type_info == '아바타'}">
+        															<div class="brassBorderBlock"></div>
+        														</c:when>
+        														<c:when test="${UserShopDTO.card_type_info == '펫'}">
+        															<div class="silverBorderBlock"></div>
+        														</c:when>
+        														<c:otherwise>
+        															<c:if test="${UserShopDTO.itm_trans_gf > 0}">
+        																<div class="goldBorderBlock"></div>
+        																<span class="card_list_gfDate">${UserShopDTO.card_date}</span>
+        															</c:if>
+        															<c:if test="${UserShopDTO.itm_trans_gf < 1}">
+        																<div class="blackBorderBlock"></div>
+        															</c:if>
+        														</c:otherwise>
+        													</c:choose>
+        													<c:if test="${UserShopDTO.card_skill > 0}">
+      															<c:if test="${UserShopDTO.itm_trans_gf < 1}">
+      																<div class="card_list_skill_back"></div>
+      															</c:if>
+      															<c:if test="${UserShopDTO.itm_trans_gf > 0}">
+      																<div class="card_list_skill_back_gold"></div>
+      															</c:if>
+      																<span class="card_list_skill">S</span>
+      														</c:if>
+        												</c:when>
+        												<c:otherwise>
+        													<div class="element_count_box">
+        														<span class="element_count">${UserShopDTO.spirit_count}</span>
+        													</div>
+        												</c:otherwise>
+        											</c:choose>
+        											
+        															
+                            						<img class="shopCard-img" alt="image" src="${UserShopDTO.card_img_path}"/>
+                            					</div>
+                            				</div>
+                            				<div class="product-desc" style="background:white; margin:5px; margin-top:0px;">
+                            					<div class="usr_info_box"> 
+                            						<img class="usr_level_img" alt="image" src="${UserShopDTO.level_img_path}"/>
+                            						<span class="usr_name_span">${UserShopDTO.usr_name}</span>
+                            					</div>
+                            					<div class="usershop_price_box">
+                            						<fmt:formatNumber value="${UserShopDTO.card_price}" pattern="#,###" var="cardshop_price_patturn"/>
+                            						<c:choose>
+                            							<c:when test="${UserShopDTO.card_price < 10000}">
+                            								<span class="usershop_price" style="color:#8CAA00">${cardshop_price_patturn}</span>
+                            							</c:when>
+                            							<c:when test="${UserShopDTO.card_price >= 10000 && UserShopDTO.card_price <= 99999}">
+                            								<span class="usershop_price" style="color:#0075A5">${cardshop_price_patturn}</span>
+                            							</c:when>
+                            							<c:when test="${UserShopDTO.card_price >= 100000 && UserShopDTO.card_price <= 999999}">
+                            								<span class="usershop_price" style="color:#CE00A5">${cardshop_price_patturn}</span>
+                            							</c:when>
+                            							<c:when test="${UserShopDTO.card_price >= 1000000 && UserShopDTO.card_price <= 9999999}">
+                            								<span class="usershop_price" style="color:#008A00">${cardshop_price_patturn}</span>
+                            							</c:when>
+                            							<c:when test="${UserShopDTO.card_price >= 10000000 && UserShopDTO.card_price <= 99999999}">
+                            								<span class="usershop_price" style="color:#EF8E00">${cardshop_price_patturn}</span>
+                            							</c:when>
+                            							<c:otherwise>
+                            								<span class="usershop_price" style="color:#BD0000">${cardshop_price_patturn}</span>
+                            							</c:otherwise>
+                            						</c:choose>
+                            						<span>코드</span>
+                            					</div>
+                            					
+                            					<!-- <span class="product-price-left">
+                            						남은일자
+                                				</span> -->
+                                				<div class="m-t text-righ">
+                                    				<!-- <button href="#" id="" class="btn btn-xs btn-outline btn-success">상세 <i class="fa fa-long-arrow-right"></i> </button> -->
+                                				</div>
+                            				</div>
+                        				</div>
+                    				</div>
+               					</div>
+                			</c:forEach>
+            			</div>
+            		</c:when>
+            		<c:otherwise>
+                  		<div style="text-align: center;">
+                  			상품이 존재하지 않습니다
+                       	</div>
+                 	</c:otherwise>
+            	</c:choose>
+            </div>
+            	<div class="ibox-content">
+            		<div align="center">
+            			<nav>
+            				<ul class="pagination">
+            					<c:if test="${userShopPageDto.startPage > 1}">
+            						<li class="page_item">
+            							<a class="page-link" aria-label="Previous" href="userShopSearch.do?currentPage=${userShopPageDto.startPage-userShopPageDto.blockPage}&search_shop_type=${map.save_shop_type}&search_shop_element=${map.save_shop_element}&search_card_level=${map.save_card_level}">
+            								<span><i style="font-weight:bold" class="fa fa-angle-left"></i></span>
+            							</a>
+            						</li>
+            					</c:if>
+            					<c:forEach var="i" begin="${userShopPageDto.startPage}" end="${userShopPageDto.endPage}">
+            						<c:url var="currPage" value="userShopSearch.do">
+            							<c:param name="currentPage" value="${i}" />
+            							<c:param name="search_shop_type" value="${map.save_shop_type}" />
+            							<c:param name="search_shop_element" value="${map.save_shop_element}" />
+            							<c:param name="search_card_level" value="${map.save_card_level}" />
+            						</c:url>
+            						<c:choose>
+            							<c:when test="${ i >=1 }">
+            								<c:choose>
+            									<c:when test="${i == userShopPageDto.currentPage}">
+            										<li class="page_item active"><a class="page-link" style="background-color: #1ab394;border-color: #1ab394;color: white"href="${currPage} "> <c:out value="${i}" /></a></li>
+            									</c:when>
+            									<c:otherwise>
+            										<li class="page_item"><a class="page-link" href="${currPage}"> <c:out value="${i}" /></a></li>
+            									</c:otherwise>
+											</c:choose>
+										</c:when>
+									</c:choose>
+								</c:forEach>
+								<c:if test="${userShopPageDto.totalPage > userShopPageDto.endPage}">
+									<li class="page_item">
+										<a class="page-link" aria-label="Next" href="userShopSearch.do?currentPage=${userShopPageDto.startPage+userShopPageDto.blockPage}&search_shop_type=${map.save_shop_type}&search_shop_element=${map.save_shop_element}&search_card_level=${map.save_card_level}">
+											<span><i style="font-weight:bold"class="fa fa-angle-right"></i></span>
+										</a>
+									</li>
+								</c:if>
+							</ul>
+						</nav>
+					</div>
+			 	</div>
+        	</div>
+    		<!-- The Modal -->
+    		<div id="myModal" class="modal">
+    		<!-- Modal content -->
+    			
+    		</div>
+        <%@ include file="../template/footer.jsp"%>
+    </div>
+</div>
+
+
+
+	<!-- Mainly scripts -->
+	<script src="js/jquery-3.1.1.min.js"></script>
+	<script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.js"></script>
+	<script src="js/plugins/metisMenu/jquery.metisMenu.js"></script>
+	<script src="js/plugins/slimscroll/jquery.slimscroll.min.js"></script>
+
+	<!-- Custom and plugin javascript -->
+	<script src="js/inspinia.js"></script>
+	<script src="js/plugins/pace/pace.min.js"></script>
+	
+		<!-- alert -->
+	<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+
+</body>
+
+</html>

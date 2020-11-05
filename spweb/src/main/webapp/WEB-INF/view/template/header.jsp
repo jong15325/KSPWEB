@@ -1,0 +1,85 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
+<div class="row border-bottom">
+	<nav class="navbar navbar-static-top" role="navigation" style="margin-bottom: 0">
+        <div class="navbar-header">
+            <a class="navbar-minimalize minimalize-styl-2 btn btn-primary " href="#"><i class="fa fa-bars"></i> </a>
+            <!-- <form role="search" class="navbar-form-custom" action="search_results.html">
+                <div class="form-group">
+                    <input type="text" placeholder="Search for something..." class="form-control" name="top-search" id="top-search">
+                </div>
+            </form> -->
+        </div>
+        <ul class="nav navbar-top-links navbar-right">
+			<li style="padding: 20px">
+   				<span class="m-r-sm text-muted welcome-message"></span>
+            </li>
+            <c:if test="${sessionScope.userInfoSession != null}">
+            	<li class="dropdown">
+					<div class="dropdown profile-element">
+        				<a data-toggle="dropdown" class="dropdown-toggle" href="#">
+							<span class="text-muted text-xs block">My <b class="caret"></b></span>
+						</a>
+						<ul class="dropdown-menu animated fadeInRight m-t-xs">
+							<c:if test="${sessionScope.userInfoSession != null}">
+								<form name="headerFrm" id="headerFrm" method="post">
+									<input id = "myNameHeaderHidden" name="form_usr_name" type="hidden" value="${sessionScope.userInfoSession.usr_name}">
+								</form>
+								<li><a id="myHeaderMessageBox" class="dropdown-item">쪽지함</a></li>
+								<li><a id="myHeaderInfoView" class="dropdown-item">내 정보</a></li>
+									<c:if test="${sessionScope.userGuildInfoSession != null || sessionScope.userInfoSession != null}">
+										<c:if test="${sessionScope.userGuildInfoSession.guild_name == sessionScope.userInfoSession.usr_guildname}">
+											<c:url var="content" value="guildHome.do">
+												<c:param name="guild_id" value="${sessionScope.userGuildInfoSession.guild_id}" />
+												<c:param name="usr_id" value="${sessionScope.userInfoSession.usr_id}" />
+											</c:url>
+        									<li><a href="${content}" id="myHeaderGuildView" class="dropdown-item">내 길드</a></li>
+        									<c:if test="${sessionScope.userGuildInfoSession.guild_leader == sessionScope.userInfoSession.usr_name}">
+                        						<li><a id="myGuildManagerView" class="dropdown-item" href="guildChangeCheck.do">내 길드 관리</a></li>
+                        					</c:if>
+             							</c:if>
+              						</c:if>
+         							<li><a id="myHeaderInfoChange" class="dropdown-item" href="myInformationChangeCheck.do">내 정보 변경</a></li>
+           					</c:if>
+  						</ul>
+        			</div>
+                </li>
+				<li>
+					<a href="userLogout.do">
+						<i class="fa fa-sign-out"></i> 로그아웃
+					</a>
+				</li>      
+                </c:if>
+                <c:if test="${sessionScope.userInfoSession == null}">
+                	<li>
+                 	   <a href="userLogin.do">
+                 	       <i class="fa fa-sign-in"></i> 로그인
+                 	   </a>
+               		</li>                
+                </c:if>
+            </ul>
+        </nav>
+	</div>	
+	<script type="text/javascript">
+        $(document).ready(function() {
+        	
+        	$('#myHeaderInfoView').bind('click', function() {
+				$('#headerFrm').attr('action', 'myPage.do');
+				$('#headerFrm').submit();
+			});
+        	
+        	$('#myHeaderGuildView').bind('click', function() {
+				/* $('#leftColumFrm').attr('action', 'userMyPage.do'); */
+				$('#headerFrm').attr('action', 'userList.do');
+				$('#headerFrm').submit();
+			});
+        	
+        	$('#myHeaderMessageBox').bind('click', function() {
+				/* $('#leftColumFrm').attr('action', 'userMyPage.do'); */
+				$('#headerFrm').attr('action', 'myMessageBox.do');
+				$('#headerFrm').submit();
+			});
+        });
+    </script>

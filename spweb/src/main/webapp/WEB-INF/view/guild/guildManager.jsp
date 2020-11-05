@@ -1,0 +1,1215 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
+<!DOCTYPE html>
+<html>
+<%@ include file="../template/head.jsp"%>
+<link href="css/magic-check.css" rel="stylesheet">
+<style>
+#checkNone:before{
+	border : 0;
+    cursor: inherit;
+}
+</style>
+<script type="text/javascript">	
+	var nowTab = 0;
+	var p_member_yn = 'N';
+	var p_app_yn = 'N';
+	var p_position_yn = 'N';
+	var p_auth_yn = 'N';
+	var menu_num = 0;
+	
+	$(document).ready(function() {
+		//페이지 접속 권한 체크 진행
+		var usr_id = '${sessionScope.userInfoSession.usr_id}';
+		var form_data = {
+				usr_id : usr_id,
+		};
+		$.ajax({
+			method : "post",
+			dataType : "json",
+			url : "guildManagerAuthCheck.do",
+			data : form_data,
+			success : function(data){
+				if(data == 0){
+					swal({
+						text: "페이지 접속 권한이 없습니다",
+						icon: "warning",
+						confirm : "OK",
+					}).then((willDelete) => {
+						location.href = "index.do"
+					});
+				}else{
+					alert('페이지 권한 체크 완료');
+				}
+			},
+			error : function(request, status, error){
+				if('${sessionScope.userInfoSession == null}'){
+					swal({
+						text: "세션이 만료되었습니다.",
+						icon: "warning",
+						confirm : "OK",
+					}).then((willDelete) => {
+						location.href = "index.do"
+					});
+				}else{
+					swal({
+						title : "오류가 발생하였습니다",
+						text: "오류 코드 63",
+					  	icon: "warning",
+					})
+				}
+			}
+		});
+		
+		
+		var appListNum = 0;
+		var positionListNum = 0;
+		
+		var memberNowNum = 0;
+		var memberListMoveType = 0;
+		var memberTotalNum = 0;
+		var memberNowPage = 0;
+		var memberMoreList = 0;
+		
+		var appNowNum = 0;
+		var appListMoveType = 0;
+		var appTotalNum = 0;
+		var appNowPage = 0;
+		var appMoreList = 0;
+		var appType = 0; // 수락1 거절0
+		
+		var positionNowNum = 0;
+		var positionListMoveType = 0;
+		var positionTotalNum = 0;
+		var positionNowPage = 0;
+		var positionList = 0;
+		
+		
+		$('#positionListBtn').on("click", function(){
+			menu_num = 3; // 직책 리스트 버튼
+			var usr_id = '${sessionScope.userInfoSession.usr_id}';
+			var form_data = {
+					menu_num : menu_num,
+					usr_id : usr_id,
+			};
+			$.ajax({
+				method : "post",
+				dataType : "json",
+				url : "guildManagerMenuAuthCheck.do",
+				data : form_data,
+				success : function(data){
+					if(data == 0){
+						swal({
+							text: "권한이 없습니다.",
+						  	icon: "info",
+						})
+						return;
+					}else if (data == 1){
+						positionNowNum = 0;
+						positionListMoveType = 0;
+						positionTotalNum = 0;
+						positionNowPage = 0;
+						positionList = 0;
+						
+						if(nowTab == 1){
+							 $("#memberTable").slideUp();
+							 $("#memberTbody").empty();
+							 $("#memberListFoot").empty();
+						 }else if(nowTab == 2){
+							 $("#appTable").slideUp();
+							 $("#appTbody").empty();
+							 $("#appListFoot").empty();
+						 }else if(nowTab == 0){
+							 
+						 }else{
+							return;
+						 }
+						 positionListCreate();
+						 /* $("#positionTable").slideDown(); */
+						 nowTab = 3;
+					}else{
+						swal({
+							text: "오류가 발생하였습니다",
+							icon: "warning",
+							confirm : "OK",
+						}).then((willDelete) => {
+							location.href = "index.do"
+						});
+					}
+				},
+				error : function(request, status, error){
+					if('${sessionScope.userInfoSession == null}'){
+						swal({
+							text: "세션이 만료되었습니다.",
+							icon: "warning",
+							confirm : "OK",
+						}).then((willDelete) => {
+							location.href = "index.do"
+						});
+					}else{
+						swal({
+							title : "오류가 발생하였습니다",
+							text: "오류 코드 63",
+						  	icon: "warning",
+						})
+					}
+				}
+			});
+		});
+		
+		$('#appListBtn').on("click", function(){
+			menu_num = 2; // 신청 리스트 버튼
+			var usr_id = '${sessionScope.userInfoSession.usr_id}';
+			var form_data = {
+					menu_num : menu_num,
+					usr_id : usr_id,
+			};
+			$.ajax({
+				method : "post",
+				dataType : "json",
+				url : "guildManagerMenuAuthCheck.do",
+				data : form_data,
+				success : function(data){
+					if(data == 0){
+						swal({
+							text: "권한이 없습니다.",
+						  	icon: "info",
+						})
+						return;
+					}else if (data == 1){
+						appNowNum = 0;
+						appListMoveType = 0;
+						appTotalNum = 0;
+						appNowPage = 0;
+						appMoreList = 0;
+						
+						if(nowTab == 1){
+							$("#memberTable").slideUp();
+							$("#memberTbody").empty();
+							$("#memberListFoot").empty();
+						}else if(nowTab == 3){
+							$("#positionTable").slideUp();
+							$("#positionTbody").empty();
+							$("#positionListFoot").empty();
+						}else if(nowTab == 0){
+							
+						}else{
+							return;
+						}
+						appListCreate(0);
+						nowTab = 2;
+					}else{
+						swal({
+							text: "오류가 발생하였습니다",
+							icon: "warning",
+							confirm : "OK",
+						}).then((willDelete) => {
+							location.href = "index.do"
+						});
+					}
+				},
+				error : function(request, status, error){
+					if('${sessionScope.userInfoSession == null}'){
+						swal({
+							text: "세션이 만료되었습니다.",
+							icon: "warning",
+							confirm : "OK",
+						}).then((willDelete) => {
+							location.href = "index.do"
+						});
+					}else{
+						swal({
+							title : "오류가 발생하였습니다",
+							text: "오류 코드 63",
+						  	icon: "warning",
+						})
+					}
+				}
+			});
+		});
+		
+		$('#memberListBtn').on("click", function(){
+			menu_num = 1; // 신청 리스트 버튼
+			var usr_id = '${sessionScope.userInfoSession.usr_id}';
+			var form_data = {
+					menu_num : menu_num,
+					usr_id : usr_id,
+			};
+			$.ajax({
+				method : "post",
+				dataType : "json",
+				url : "guildManagerMenuAuthCheck.do",
+				data : form_data,
+				success : function(data){
+					if(data == 0){
+						swal({
+							text: "권한이 없습니다.",
+						  	icon: "info",
+						})
+						return;
+					}else if (data == 1){
+						memberNowNum = 0;
+						memberListMoveType = 0;
+						memberTotalNum = 0;
+						memberNowPage = 0;
+						memberMoreList = 0;
+						
+						if(nowTab == 2){
+							$("#appTable").slideUp();
+							$("#appTbody").empty();
+							$("#appListFoot").empty();
+						}else if(nowTab == 3){
+							$("#positionTable").slideUp();
+							$("#positionTbody").empty();
+							$("#positionListFoot").empty();
+						}else if(nowTab == 0){
+							 
+						}else{
+							return;
+						}
+						
+						memberListCreate(0);
+						nowTab = 1;
+					}else{
+						swal({
+							text: "오류가 발생하였습니다",
+							icon: "warning",
+							confirm : "OK",
+						}).then((willDelete) => {
+							location.href = "index.do"
+						});
+					}
+				},
+				error : function(request, status, error){
+					if('${sessionScope.userInfoSession == null}'){
+						swal({
+							text: "세션이 만료되었습니다.",
+							icon: "warning",
+							confirm : "OK",
+						}).then((willDelete) => {
+							location.href = "index.do"
+						});
+					}else{
+						swal({
+							title : "오류가 발생하였습니다",
+							text: "오류 코드 63",
+						  	icon: "warning",
+						})
+					}
+				}
+			});
+		});
+		
+		function memberListCreate(memberListMoveType){
+			var limitCount = 5;
+			var listType = 1;
+			var form_data = {
+					listType : listType,
+			};
+			$.ajax({
+				method : "post",
+				dataType : "json",
+				url : "guildManagerListCount.do",
+				data : form_data,
+				success : function(data){
+					//memberListMoveType 1 = 이전 / 2 다음 / 0 생성
+					memberTotalNum = data;
+					var lastPage = Math.ceil(memberTotalNum / limitCount);
+					lastPage + 1;
+					if(memberListMoveType == 1){
+						if(memberNowPage >= 1){
+							memberNowPage--;
+							memberNowNum  = ( memberNowPage -1 ) * limitCount;
+						}
+					}else{
+						if(memberNowPage < lastPage)
+							memberNowPage++;
+					}
+					
+					var form_data2 = {
+							memberNowNum : memberNowNum,
+							limitCount : limitCount,
+					};
+					$.ajax({
+						method : "POST",
+						url : "memberListCreate.do",
+						data : form_data2,
+						success : function(data){
+							if(data == ''){
+								swal({
+									text: "멤버가 없습니다",
+								  	icon: "info",
+								})
+								$("#memberTable").empty();
+								$("#memberTbody").empty();
+								$("#memberListFoot").empty();
+								return;
+							}else{
+								$("#memberTbody").empty();
+								$("#memberListFoot").empty();
+							}
+							
+							if(memberTotalNum % limitCount != 0){
+									memberMoreList = 1;
+							}
+							
+							var indexCount = 0;
+							$.each(data, function(index, item){
+								//var onlineState = "Offline";
+								var contribution_point = data[index].contribution_point;
+									contribution_point = contribution_point / 100000;
+									contribution_point = numberWithCommas(contribution_point);
+									if(contribution_point < 1){
+										contribution_point = 0;
+									}
+								var memberTbody = "<tr id='memberIndex"+data[index].gmember_id+"'>";
+									memberTbody += "<td style='vertical-align: middle;' onclick='event.cancelBubble=true;'>";
+									memberTbody += "<input id='check-"+data[index].gmember_id+"' class='magic-checkbox' type='checkbox' name='memberListCheckBox' value='"+data[index].gmember_id+"'/>";
+									memberTbody += "<label id='checkLabel-"+data[index].gmember_id+"' for='check-"+data[index].gmember_id+"'></label>";
+									memberTbody += "</td>";
+									memberTbody += "<td style='text-align : left; padding-left:0;'>";
+									memberTbody += "<img alt='image' class='img-fluid' src='"+data[index].member_level_img+"' style='width: 12px;'/>";
+									memberTbody += " "+data[index].usr_name+"</td>";
+									memberTbody += "<td style=''>"+timeStringFormat(data[index].lately_online)+"</td>";
+									memberTbody += "<td style=''>"+contribution_point+" P</td>";
+									memberTbody += "</tr>";
+									$("#memberTbody").append(memberTbody);
+									memberNowNum++;
+									indexCount++;
+							});
+							
+							if(memberMoreList == 1){
+								if(lastPage ==  memberNowPage){
+									if(indexCount < 5){
+										for(var i = 0; i < limitCount-indexCount; i++){
+											var memberTbody = "<tr id='memberIndex'>";
+											memberTbody += "<td style='vertical-align: middle;'><input id='check-none' class='magic-checkbox' type='checkbox' name='memberListCheckBox' value='0'/><label id='checkNone' style=''></label>";
+											memberTbody += "</td>";
+											memberTbody += "<td style='text-align : left; padding-left:0;'>-</td>";
+											memberTbody += "<td style=''>-</td>";
+											memberTbody += "<td style=''>-</td>";
+											memberTbody += "</tr>";
+											$("#memberTbody").append(memberTbody);
+										}
+									}
+								}
+							}
+							
+							var footDiv = "";
+								if(memberNowPage <= 1 ){   // <
+									footDiv += "<button id='memberPre' class='btn btn-success dim' style='text-align:left;' disabled='true'><i class='fa fa-arrow-left'></i></button>";
+								}else{
+									footDiv += "<button id='memberPre' class='btn btn-success dim' style='text-align:left;'><i class='fa fa-arrow-left'></i></button>";
+								}
+								footDiv += "<button id='memberExile' class='btn btn-danger dim' style='text-align:center'>추방</button>";
+								
+								if(memberNowNum < memberTotalNum){
+									footDiv += "<button id='memberNext' type='button' class='btn btn-success dim' style='text-align:right;'><i class='fa fa-arrow-right'></i></button>";
+								}else{
+									footDiv += "<button id='memberNext' type='button' class='btn btn-success dim' style='text-align:right;' disabled='true'><i class='fa fa-arrow-right'></i></button>";
+								}
+								$("#memberListFoot").append(footDiv);
+								$("#memberTable").slideDown();
+						},
+						error : function(request, status, error){
+							if('${sessionScope.userInfoSession == null}'){
+								swal({
+									text: "세션이 만료되었습니다.",
+									icon: "warning",
+									confirm : "OK",
+								}).then((willDelete) => {
+									location.href = "userLogin.do"
+								});
+							}else{
+								swal({
+									title : "오류가 발생하였습니다",
+									text: "오류 코드 49",
+								  	icon: "warning",
+								})
+							}
+						}
+					});
+				},
+				error : function(request, status, error){
+					if('${sessionScope.userInfoSession == null}'){
+						swal({
+							text: "세션이 만료되었습니다.",
+							icon: "warning",
+							confirm : "OK",
+						}).then((willDelete) => {
+							location.href = "userLogin.do"
+						});
+					}else{
+						swal({
+							title : "오류가 발생하였습니다",
+							text: "오류 코드 51",
+						  	icon: "warning",
+						})
+					}
+				}
+			});
+		}
+		
+		function appListCreate(appListMoveType){
+			var limitCount = 5;
+			var listType = 2;
+			var form_data = {
+					listType : listType,
+			};
+			$.ajax({
+				method : "post",
+				dataType : "json",
+				url : "guildManagerListCount.do",
+				data : form_data,
+				success : function(data){
+					//memberListMoveType 1 = 이전 / 2 다음 / 0 생성
+					appTotalNum = data;
+					var lastPage = Math.ceil(appTotalNum / limitCount);
+					lastPage + 1;
+					if(appListMoveType == 1){
+						if(appNowPage >= 1){
+							appNowPage--;
+							appNowNum  = ( appNowPage -1 ) * limitCount;
+						}
+					}else{
+						if(appNowPage < lastPage)
+							appNowPage++;
+					}
+					
+					var form_data2 = {
+							appNowNum : appNowNum,
+							limitCount : limitCount,
+					};
+					$.ajax({
+						method : "POST",
+						url : "appListCreate.do",
+						data : form_data2,
+						success : function(data){
+							if(data == ''){
+								swal({
+									text: "신청자가 없습니다",
+								  	icon: "info",
+								})
+								$("#appTable").empty();
+								$("#appTbody").empty();
+								$("#appListFoot").empty();
+								return;
+							}else{
+								$("#appTbody").empty();
+								$("#appListFoot").empty();
+							}
+							
+							if(appTotalNum % limitCount != 0){
+								appMoreList = 1;
+							}
+							
+							var indexCount = 0;
+							$.each(data, function(index, item){
+								var sysdate = new Date(data[index].application_date);
+								var appTbody = "<tr id='appIndex"+data[index].gapplication_id+"'>";
+									appTbody += "<td style='vertical-align: middle;' onclick='event.cancelBubble=true;'>";
+									appTbody += "<input id='check-"+data[index].gapplication_id+"' class='magic-checkbox' type='checkbox' name='appListCheckBox' value='"+data[index].gapplication_id+"'/>";
+									appTbody += "<label id='checkLabel-"+data[index].gapplication_id+"' for='check-"+data[index].gapplication_id+"'></label>";
+									appTbody += "</td>";
+									appTbody += "<td style='text-align : left; padding-left:0;'>";
+									appTbody += "<img alt='image' class='img-fluid' src='"+data[index].app_level_img+"' style='width: 12px;'/>";
+									appTbody += " "+data[index].usr_name+"</td>";
+									appTbody += "<td style=''>"+timeStringFormat(data[index].lately_online)+"</td>";
+									appTbody += "<td style=''>"+timeStampFormat(data[index].application_date)+"</td>";
+									appTbody += "</tr>";
+									$("#appTbody").append(appTbody);
+									appNowNum++;
+									indexCount++;
+							});
+							
+							if(appMoreList == 1){
+								if(lastPage == appNowPage){
+									if(indexCount < 5){
+										for(var i = 0; i < limitCount-indexCount; i++){
+											var appTbody = "<tr id='appIndex'>";
+											appTbody += "<td style='vertical-align: middle;'><input id='check-none' class='magic-checkbox' type='checkbox' name='appListCheckBox' value='0'/><label id='checkNone' style=''></label>";
+											appTbody += "</td>";
+											appTbody += "<td style='text-align : left; padding-left:0;'>-</td>";
+											appTbody += "<td style=''>-</td>";
+											appTbody += "<td style=''>-</td>";
+											appTbody += "</tr>";
+											$("#appTbody").append(appTbody);
+										}
+									}
+								}
+							}
+							
+							var footDiv = "";
+								if(appNowPage <= 1 ){   // <
+									footDiv += "<button id='appPre' class='btn btn-warning dim' style='text-align:left;' disabled='true'><i class='fa fa-arrow-left'></i></button>";
+								}else{
+									footDiv += "<button id='appPre' class='btn btn-warning dim' style='text-align:left;'><i class='fa fa-arrow-left'></i></button>";
+								}
+								footDiv += "<button id='appAccept' class='btn btn-info dim' style='text-align:center'>수락</button>";
+								footDiv += "<button id='appRefuse' class='btn btn-danger dim' style='text-align:center'>거절</button>";
+								
+								if(appNowNum < appTotalNum){
+									footDiv += "<button id='appNext' type='button' class='btn btn-warning dim' style='text-align:right;'><i class='fa fa-arrow-right'></i></button>";
+								}else{
+									footDiv += "<button id='appNext' type='button' class='btn btn-warning dim' style='text-align:right;' disabled='true'><i class='fa fa-arrow-right'></i></button>";
+								}
+								$("#appListFoot").append(footDiv);
+								$("#appTable").slideDown();
+						},
+						error : function(request, status, error){
+							if('${sessionScope.userInfoSession == null}'){
+								swal({
+									text: "세션이 만료되었습니다.",
+									icon: "warning",
+									confirm : "OK",
+								}).then((willDelete) => {
+									location.href = "userLogin.do"
+								});
+							}else{
+								swal({
+									title : "오류가 발생하였습니다",
+									text: "오류 코드 49",
+								  	icon: "warning",
+								})
+							}
+						}
+					});
+				},
+				error : function(request, status, error){
+					if('${sessionScope.userInfoSession == null}'){
+						swal({
+							text: "세션이 만료되었습니다.",
+							icon: "warning",
+							confirm : "OK",
+						}).then((willDelete) => {
+							location.href = "userLogin.do"
+						});
+					}else{
+						swal({
+							title : "오류가 발생하였습니다",
+							text: "오류 코드 51",
+						  	icon: "warning",
+						})
+					}
+				}
+			});
+		}
+		
+		function memberExile(){
+			var check_member_no = "";
+			var checked = false;
+			var count = 0;
+			var member_chk = document.getElementsByName("memberListCheckBox");
+			for(i = 0; i < member_chk.length; i++){
+				if(member_chk[i].checked){
+					count++;
+					if(check_member_no != ""){
+						check_member_no = member_chk[i].value + ',' + check_member_no;
+					}else{
+						check_member_no = member_chk[i].value;
+					}
+				}
+			}
+			
+			if(count > 0){
+				swal({
+					title: "정말 추방하시겠습니까?",
+					icon: "warning",
+					buttons: true,
+					dangerMode: true,
+				})
+				.then((willDelete) => {
+					if (willDelete) {
+						var form_data = {
+								member_no : check_member_no,
+						};
+						$.ajax({
+							method : "post",
+							dataType : "json",
+							url : "guildManagerMemberExile.do",
+							data : form_data,
+							success : function(data){
+								if(data == 0){
+									swal({
+										text: "오류가 발생하였습니다",
+									  	icon: "warning",
+									})
+								}else{
+									swal({
+										text: "선택한 멤버를 추방하였습니다",
+									  	icon: "info",
+									})
+									memberNowNum = 0;
+									memberListMoveType = 0;
+									memberTotalNum = 0;
+									memberNowPage = 0;
+									memberMoreList = 0;
+									memberListCreate(memberListMoveType);
+								}
+							},
+							error : function(request, status, error){
+								if('${sessionScope.userInfoSession == null}'){
+		    						swal({
+		    							text: "세션이 만료되었습니다.",
+		    							icon: "warning",
+		    							confirm : "OK",
+		    						}).then((willDelete) => {
+		    							location.href = "userLogin.do"
+		    						});
+		    					}else{
+		    						swal({
+		    							title : "오류가 발생하였습니다",
+		    							text: "오류 코드 63",
+		    						  	icon: "warning",
+		    						})
+		    					}
+							}
+						});
+					} else {
+						swal("추방을 취소하였습니다");
+					}
+				});
+			}else{
+				swal("추방할 멤버를 선택해주세요");
+			}
+			
+		}
+		
+		function appAcceptNRefuse(appType){
+			var check_app_no = "";
+			var checked = false;
+			var count = 0;
+			var app_chk = document.getElementsByName("appListCheckBox");
+			for(i = 0; i < app_chk.length; i++){
+				if(app_chk[i].checked){
+					count++;
+					if(check_app_no != ""){
+						check_app_no = app_chk[i].value + ',' + check_app_no;
+					}else{
+						check_app_no = app_chk[i].value;
+					}
+				}
+			}
+			
+			if(count > 0){
+				var titleString = "정말 거절하시겠습니까?";
+				var textString = "선택한 신청을 거절하였습니다";
+				var cancelString = "거절을 취소하였습니다";
+				var appTypeUrl = "guildManagerAppRefuse.do";
+				if(appType == 1){
+					titleString = "정말 수락하시겠습니까?";
+					textString = "선택한 신청을 수락하였습니다";
+					cancelString = "수락을 취소하였습니다";
+					appTypeUrl = "guildManagerAppAccept.do";
+				}
+				swal({
+					title: titleString,
+					icon: "warning",
+					buttons: true,
+					dangerMode: true,
+				})
+				.then((willDelete) => {
+					if (willDelete) {
+						var form_data = {
+								app_no : check_app_no,
+								appType : appType,
+						};
+						$.ajax({
+							method : "post",
+							dataType : "json",
+							url : appTypeUrl,
+							data : form_data,
+							success : function(data){
+								if(data == 0){
+									swal({
+										text: "오류가 발생하였습니다",
+									  	icon: "warning",
+									})
+								}else{
+									swal({
+										text: textString,
+									  	icon: "info",
+									})
+									appNowNum = 0;
+									appListMoveType = 0;
+									appTotalNum = 0;
+									appNowPage = 0;
+									appMoreList = 0;
+									appType = 0;
+									appListCreate(appListMoveType);
+									for(i = 0; i < count; i++){
+										var send1 = "gd";
+										var send2 = "gd";
+										var send3 = "gdgdgdgd";
+										var send4 = "gdgdgdgd";
+										var username= $('#rcv_usr_name').val();
+										var messageType = 5;
+										var form_data = {
+												usr_name : username,
+												send1 : send1,
+												send2 : send2,
+												send3 : send3,
+												send4 : send4,
+												messageType : messageType,
+										};
+										$.ajax({
+											method : "post",
+											dataType : "json",
+											url : "sendMessageProcess.do",
+											data : form_data,
+											success : function(data){
+												
+											},
+											error : function(request, status, error){
+												return;
+											}
+										});
+									}
+								}
+							},
+							error : function(request, status, error){
+								if('${sessionScope.userInfoSession == null}'){
+		    						swal({
+		    							text: "세션이 만료되었습니다.",
+		    							icon: "warning",
+		    							confirm : "OK",
+		    						}).then((willDelete) => {
+		    							location.href = "userLogin.do"
+		    						});
+		    					}else{
+		    						swal({
+		    							title : "오류가 발생하였습니다",
+		    							text: "오류 코드 63",
+		    						  	icon: "warning",
+		    						})
+		    					}
+							}
+						});
+					} else {
+						swal(cancelString);
+					}
+				});
+			}else{
+				swal("멤버를 선택해주세요");
+			}
+			
+		}
+		
+		function positionListCreate(){
+			var limitCount = 5;
+			var listType = 3;
+			var form_data = {
+					listType : listType,
+			};
+			$.ajax({
+				method : "post",
+				dataType : "json",
+				url : "guildManagerListCount.do",
+				data : form_data,
+				success : function(data){
+					//memberListMoveType 1 = 이전 / 2 다음 / 0 생성
+					positionTotalNum = data;
+					var lastPage = Math.ceil(positionTotalNum / limitCount);
+					lastPage + 1;
+					if(positionListMoveType == 1){
+						if(positionNowPage >= 1){
+							positionNowPage--;
+							positionNowNum  = ( positionNowPage -1 ) * limitCount;
+						}
+					}else{
+						if(positionNowPage < lastPage)
+							positionNowPage++;
+					}
+					
+					var form_data2 = {
+							positionNowNum : positionNowNum,
+							limitCount : limitCount,
+					};
+					
+					
+					$.ajax({
+						method : "POST",
+						url : "positionListCreate.do",
+						data : form_data2,
+						success : function(data){
+							if(data == ''){
+								swal({
+									text: "멤버가 없습니다",
+								  	icon: "info",
+								})
+								$("#positionTable").empty();
+								$("#positionTbody").empty();
+								$("#positionListFoot").empty();
+								return;
+							}else{
+								$("#positionTbody").empty();
+								$("#positionListFoot").empty();
+							}
+							
+							if(positionTotalNum % limitCount != 0){
+								positionMoreList = 1;
+							}
+							
+							var indexCount = 0;
+							$.each(data, function(index, item){
+								var positionTbody = "<tr id='positionIndex"+data[index].gposition_id+"'>";
+									positionTbody += "<td style='vertical-align: middle;' onclick='event.cancelBubble=true;'>";
+									positionTbody += "<input id='check-"+data[index].gposition_id+"' class='magic-checkbox' type='checkbox' name='positionListCheckBox' value='"+data[index].gposition_id+"'/>";
+									positionTbody += "<label id='checkLabel-"+data[index].gposition_id+"' for='check-"+data[index].gposition_id+"'></label>";
+									positionTbody += "</td>";
+									positionTbody += "<td style='text-align : left; padding-left:0;'>";
+									positionTbody += " "+data[index].position_name+"</td>";
+									positionTbody += "<td style=''>"+data[index].p_member_yn+"</td>";
+									positionTbody += "<td style=''>"+data[index].p_app_yn+"</td>";
+									positionTbody += "<td style=''>"+data[index].p_position_yn+"</td>";
+									positionTbody += "<td style=''>"+data[index].p_auth_yn+"</td>";
+									positionTbody += "</tr>";
+									$("#positionTbody").append(positionTbody);
+									positionNowNum++;
+									indexCount++;
+							});
+							
+							if(positionMoreList == 1){
+								if(lastPage ==  positionNowPage){
+									if(indexCount < 5){
+										for(var i = 0; i < limitCount-indexCount; i++){
+											var positionTbody = "<tr id='positionIndex'>";
+											positionTbody += "<td style='vertical-align: middle;'><input id='check-none' class='magic-checkbox' type='checkbox' name='positionListCheckBox' value='0'/><label id='checkNone' style=''></label>";
+											positionTbody += "</td>";
+											positionTbody += "<td style='text-align : left; padding-left:0;'>-</td>";
+											positionTbody += "<td style=''>-</td>";
+											positionTbody += "<td style=''>-</td>";
+											positionTbody += "<td style=''>-</td>";
+											positionTbody += "<td style=''>-</td>";
+											positionTbody += "</tr>";
+											$("#positionTbody").append(positionTbody);
+										}
+									}
+								}
+							}
+							
+							var footDiv = "";
+								if(positionNowPage <= 1 ){   // <
+									footDiv += "<button id='positionPre' class='btn btn-info dim' style='text-align:left;' disabled='true'><i class='fa fa-arrow-left'></i></button>";
+								}else{
+									footDiv += "<button id='positionPre' class='btn btn-info dim' style='text-align:left;'><i class='fa fa-arrow-left'></i></button>";
+								}
+								footDiv += "<button id='positionExile' class='btn btn-danger dim' style='text-align:center'>asd</button>";
+								
+								if(positionNowNum < positionTotalNum){
+									footDiv += "<button id='positionNext' type='button' class='btn btn-info dim' style='text-align:right;'><i class='fa fa-arrow-right'></i></button>";
+								}else{
+									footDiv += "<button id='positionNext' type='button' class='btn btn-info dim' style='text-align:right;' disabled='true'><i class='fa fa-arrow-right'></i></button>";
+								}
+								$("#positionListFoot").append(footDiv);
+								$("#positionTable").slideDown();
+						},
+						error : function(request, status, error){
+							if('${sessionScope.userInfoSession == null}'){
+								swal({
+									text: "세션이 만료되었습니다.",
+									icon: "warning",
+									confirm : "OK",
+								}).then((willDelete) => {
+									location.href = "userLogin.do"
+								});
+							}else{
+								swal({
+									title : "오류가 발생하였습니다",
+									text: "오류 코드 49",
+								  	icon: "warning",
+								})
+							}
+						}
+					});
+				},
+				error : function(request, status, error){
+					if('${sessionScope.userInfoSession == null}'){
+						swal({
+							text: "세션이 만료되었습니다.",
+							icon: "warning",
+							confirm : "OK",
+						}).then((willDelete) => {
+							location.href = "userLogin.do"
+						});
+					}else{
+						swal({
+							title : "오류가 발생하였습니다",
+							text: "오류 코드 51",
+						  	icon: "warning",
+						})
+					}
+				}
+			});
+		}
+		
+		
+		$(document).on("click","#memberNext", function() {
+			memberListMoveType = 2;
+			memberListCreate(memberListMoveType);
+		});
+		
+		$(document).on("click","#memberPre", function() {
+			memberListMoveType = 1;
+			memberListCreate(memberListMoveType);
+		});
+		
+		$(document).on("click","#memberExile", function() {
+			memberExile();
+		});
+		
+		$(document).on("click","#appNext", function() {
+			appListMoveType = 2;
+			appListCreate(appListMoveType);
+		});
+		
+		$(document).on("click","#appPre", function() {
+			appListMoveType = 1;
+			appListCreate(appListMoveType);
+		});
+		
+		$(document).on("click","#appAccept", function() {
+			appType = 1;
+			appAcceptNRefuse(appType);
+		});
+		
+		$(document).on("click","#appRefuse", function() {
+			appType = 0;
+			appAcceptNRefuse(appType);
+		});
+		
+		$(document).on("click","#positionNext", function() {
+			positionListMoveType = 2;
+			positionListCreate(positionListMoveType);
+		});
+		
+		$(document).on("click","#positionPre", function() {
+			positionListMoveType = 1;
+			positionListCreate(positionListMoveType);
+		});
+		
+		
+		
+		
+		function numberWithCommas(x) {
+		    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+		}
+		
+		function timeStringFormat(timeString){
+			var year = timeString.substring(2, 4);
+			var month = timeString.substring(4, 6);
+			var day = timeString.substring(6);
+			
+			var date = year + "-" + month + "-" + day;
+			
+			return date
+		}
+		
+		function timeStampFormat(timestamp){
+			var date = new Date(timestamp);
+			var year = date.getYearYY();
+			var month = date.getMonth()+1;
+			var day = date.getDate();
+			var hour = date.getHours();
+			var min = date.getMinutes();
+			var sec = date.getSeconds();
+			var retVal = year + "-" + (month < 10 ? "0" + month : month) + "-" + (day < 10 ? "0" + day : day);
+			
+			return retVal
+		}
+		
+		Date.prototype.getYearYY = function(){
+			 var a = this.getYear();
+			 return a >= 100 ? a-100 : a;
+		}
+		
+	});
+</script>
+<style>
+label{
+	margin-bottom : 1.5rem;
+}
+
+td {
+	padding : 0;
+}
+
+@media (max-width: 768px) {
+	  table {
+	    font-size: 10px;
+	  }
+}
+</style>
+<link href="css/magic-check.css" rel="stylesheet">
+<body class="pace-done">
+	<div class="pace  pace-inactive">
+		<div class="pace-progress" data-progress-text="100%" data-progress="99" style="transform: translate3d(100%, 0px, 0px);">
+  			<div class="pace-progress-inner"></div>
+		</div>
+		<div class="pace-activity">
+		</div>
+	</div>
+	
+	<div class="wrapper">
+	<%@ include file="../template/left_column.jsp"%>
+		<div id="page-wrapper" class="gray-bg">
+			<%@ include file="../template/header.jsp"%>
+			<div class="row wrapper border-bottom white-bg page-heading">
+			<div class="col-lg-10">
+				<h2>길드</h2>
+					<ol class="breadcrumb">
+						<li class="breadcrumb-item">
+                            <a href="index.do">메인</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <span>길드</span>
+                        </li>
+                        <li class="breadcrumb-item active">
+                            <strong>관리</strong>
+                        </li>
+                    </ol>
+                </div>
+            	<div class="col-lg-2">
+            	</div>
+        	</div>
+        	<div class="wrapper wrapper-content">
+            	<div class="row animated fadeInRight">
+            		<div class="ibox-content" style="width: 100%;">
+            			<div style="width:100%; text-align:center;">
+            				<button id="memberListBtn" type="button" class="btn btn-outline btn-success" style="width:97%;margin:2px;" >멤버 관리 <i class="fa fa-angle-down"></i></button>
+            				<div id = "memberTable" style="width:97%;display:none;margin:auto;background: aliceblue">
+            					<table class="table table-hover" style="margin: auto;">
+            						<thead>
+            							<tr>
+            								<th style="width:0.1%;"></th>
+            								<th style="width:25%;">ID</th>
+            								<th style="width:7%;">LastOn</th>
+            								<th style="width:15%;">G.Point</th>
+            							<!-- <th style="width:2%;">O/F</th> -->
+            							</tr>
+            						</thead>
+            						<tbody id="memberTbody">
+            						</tbody>
+            					</table>
+            				</div>
+            			<!-- <div id="memberListFoot" style="width:97%;margin:auto;padding-top:15px;padding-bottom:15px;"> -->
+            				<div id="memberListFoot" style="">
+            				</div>
+            			</div>
+            			<div style="width:100%; text-align:center;">
+            				<button id="appListBtn" type="button" class="btn btn-outline btn-warning" style="width:97%;margin:2px;" >신청자 관리 <i class="fa fa-angle-down"></i></button>
+            				<div id = "appTable" style="width:97%;display:none;margin:auto;background: beige">
+            					<table class="table table-hover" style="margin: auto;">
+            						<thead>
+            							<tr>
+            								<th style="width:0.1%;"></th>
+            								<th style="width:25%;">ID</th>
+            								<th style="width:7%;">LastOn</th>
+            								<th style="width:15%;">AppDate</th>
+            							<!-- <th style="width:2%;">O/F</th> -->
+            							</tr>
+            						</thead>
+            						<tbody id="appTbody">
+            						</tbody>
+            					</table>
+            				</div>
+            				<div id="appListFoot" style="">
+            				</div>
+            			</div>
+            			<div style="width:100%; text-align:center;">
+            				<button id="positionListBtn" type="button" class="btn btn-outline btn-info" style="width:97%;margin:2px;">직책 관리 <i class="fa fa-angle-down"></i></button>
+            				<div id = "positionTable" style="width:97%;margin:auto;display:none;background: beige">
+            					<table class="table table-hover" style="margin: auto;">
+            						<thead>
+            							<tr>
+            								<th style="width:0.1%;"></th>
+            								<th style="width:15%;">직책명</th>
+            								<th style="width:7%;">멤버</th>
+            								<th style="width:7%;">신청</th>
+            								<th style="width:7%;">포지션</th>
+            								<th style="width:7%;">권한</th>
+            							</tr>
+            						</thead>
+            						<tbody id="positionTbody">
+            						</tbody>
+            					</table>
+            				</div>
+            				<div id="positionListFoot" style="">
+            				</div>
+            			</div>
+            		</div>
+                	<%-- <div class="col-md-6">
+                    	<div class="ibox">
+                    		<div class="ibox-content">
+								멤버
+							</div>
+                		</div>
+                    </div>
+                	<div class="col-md-6">
+                    	<div class="ibox ">
+                    		<div class="ibox-content">
+                    			<c:choose>
+                    				<c:when test="${aList != null}">
+                    					<table class="footable table table-stripped toggle-arrow-tiny" data-page-size="15">
+                    						<thead>
+                                				<tr>
+                                					<th style="width:5%;">선택</th>
+                                					<th style="width:15%;">유저이름</th>
+                                					<th style="width:15%;">신청일</th>
+                                				</tr>
+                                			</thead>
+                                			<tbody>
+                                			<c:forEach items="${aList}" var="GuildAppDTO">
+                                				<jsp:useBean id="now" class="java.util.Date" />
+												<fmt:formatDate value="${now}" pattern="yyyy-MM-dd" var="today" />
+												<fmt:formatDate value="${GuildAppDTO.application_date}" pattern="yyyy-MM-dd" var="reg_date" />
+                                				<td style="vertical-align: middle;" onclick='event.cancelBubble=true;'>
+                                    				<input id="check-${GuildAppDTO.gapplication_id}" class="magic-checkbox" type="checkbox" name="listCheckBox" value="${NoticeBoardDTO.article_no}"/>
+                                    				<label for="check-${GuildAppDTO.gapplication_id}"></label>                     				
+                                    			</td>
+                                				<td>
+                                					<span>${GuildAppDTO.usr_name}</span>
+                                				</td>
+                                				<td>
+                                					<c:choose>
+                                						<c:when test="${reg_date == today}">
+                                							<i id= "fa-calendar" class="fa fa-clock-o"> </i>
+                                							<span><fmt:formatDate value="${GuildAppDTO.application_date}" pattern="HH:mm" /></span>
+                                						</c:when>
+                                						<c:otherwise>
+                                							<i id= "fa-calendar" class="fa fa-calendar"> </i>
+                                							<span><fmt:formatDate value="${GuildAppDTO.application_date}" pattern="MM-dd" /></span>
+                                						</c:otherwise>
+                                					</c:choose>
+                                				</td>
+                                			</c:forEach>
+                    					</table>
+                    				</c:when>
+                    				<c:otherwise>
+                        				<div style="text-align: center;">
+                        					신청자가 없습니다.
+                        				</div>
+                        			</c:otherwise>
+                    			</c:choose>
+							</div>
+                		</div>
+            		</div>
+            		<div class="col-md-6">
+                    	<div class="ibox ">
+                    		<div class="ibox-content">
+								직책
+							</div>
+                		</div>
+            		</div> --%>
+        		</div>
+			<%@ include file="../template/footer.jsp"%>
+	 	</div>
+	  	<%@ include file="../template/chatBox.jsp"%>
+	  <%-- <%@ include file="../template/right_column.jsp"%> --%>
+		</div>
+	</div>
+	<%@ include file="../template/plugin_js.jsp"%>
+</body>
+</html>

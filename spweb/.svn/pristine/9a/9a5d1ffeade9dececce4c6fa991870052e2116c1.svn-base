@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="message">
+
+	<select id="inBoxCount" resultType="int">
+		SELECT count(*) FROM
+		messages WHERE username = #{username} AND message_del = 0
+	</select>
+	
+	<select id="inBoxSendCount" resultType="int">
+		SELECT count(*) FROM
+		messages WHERE sender = #{sender}
+	</select>
+	
+	<select id="inBox" resultType="dto.MessageDTO">
+	<![CDATA[
+		SELECT 	num, sender, username, messageType,
+				levelAndGender, unk1, msg, sent, send_date,
+				message_del
+		FROM messages WHERE username = #{username} AND message_del = 0 ORDER BY num DESC
+		LIMIT #{startRow}, #{blockCount}
+	]]>
+	</select>
+	
+	<select id="inBoxSend" resultType="dto.MessageDTO">
+	<![CDATA[
+		SELECT 	num, sender, username, messageType,
+				levelAndGender, unk1, msg, sent, send_date,
+				message_del
+		FROM messages WHERE sender = #{sender} ORDER BY num DESC
+		LIMIT #{startRow}, #{blockCount}
+	]]>
+	</select>
+	
+	<select id="inBoxView" resultType="dto.MessageDTO">
+	<![CDATA[
+		SELECT 	num, sender, username, messageType,
+				levelAndGender, unk1, msg, sent, send_date,
+				message_del
+		FROM messages WHERE num = #{messageValue}
+	]]>
+	</select>
+	
+	<update id="messageDelete">
+		UPDATE messages
+		SET
+		message_del = 1
+		WHERE
+		num = #{num}
+	</update>
+	
+	<select id="inBoxUnreadCount" resultType="int">
+		SELECT count(*) FROM
+		messages WHERE username = #{username} AND message_del = 0 AND sent = 0
+	</select>
+	
+	<select id="inboxDeleteCount" resultType="int">
+		SELECT count(*) FROM
+		messages WHERE username = #{username} AND message_del = 1
+	</select>
+	
+	<select id="inboxSendCount" resultType="int">
+		SELECT count(*) FROM
+		messages WHERE sender = #{sender}
+	</select>
+	
+	<select id="inboxSearch" parameterType="java.util.HashMap" resultType="dto.MessageDTO">
+		SELECT num, sender, username, messageType,
+				levelAndGender, unk1, msg, sent, send_date,
+				message_del
+		FROM messages
+		WHERE
+		<choose>
+			<when test="option == 'userSearchName'">
+				sender
+			</when>
+		</choose>
+		LIKE CONCAT ('%', #{keyword}, '%')
+		AND message_del = 0 AND username = #{username} ORDER BY num DESC
+		LIMIT #{startRow}, #{blockCount}
+	</select>
+	
+	<select id="inboxSearchCount" parameterType="java.util.HashMap" resultType="int">
+		SELECT count(*) FROM messages WHERE
+		<choose>
+			<when test="option == 'userSearchName'">
+				sender
+			</when>
+		</choose>
+		LIKE CONCAT ('%', #{keyword}, '%') AND message_del = 0 AND username = #{username}
+	</select>
+	
+	<select id="inboxSendSearch" parameterType="java.util.HashMap" resultType="dto.MessageDTO">
+		SELECT num, sender, username, messageType,
+				levelAndGender, unk1, msg, sent, send_date,
+				message_del
+		FROM messages
+		WHERE
+		<choose>
+			<when test="option == 'userSearchName'">
+				username
+			</when>
+		</choose>
+		LIKE CONCAT ('%', #{keyword}, '%')
+		AND sender = #{sender} ORDER BY num DESC
+		LIMIT #{startRow}, #{blockCount}
+	</select>
+	
+	<select id="inboxSendSearchCount" parameterType="java.util.HashMap" resultType="int">
+		SELECT count(*) FROM messages WHERE
+		<choose>
+			<when test="option == 'userSearchName'">
+				username
+			</when>
+		</choose>
+		LIKE CONCAT ('%', #{keyword}, '%') AND sender = #{sender}
+	</select>
+	
+	<select id="userNameCount" parameterType="String" resultType="int">
+		SELECT count(*) FROM users WHERE usr_name = #{usr_name}
+	</select>
+	
+	<insert id="insertMessage">
+		INSERT INTO messages(sender, username, messageType, levelAndGender, unk1, msg, sent)
+		VALUES (#{sender, jdbcType=VARCHAR}, #{username, jdbcType=VARCHAR}, #{messageType, jdbcType=INTEGER},
+				#{levelAndGender, jdbcType=INTEGER}, 0, #{msg, jdbcType=VARCHAR}, 0)
+	</insert>
+	
+	<update id="readMessage">
+		UPDATE messages SET sent = 1 WHERE num = #{num}
+	</update>
+	
+	<select id="previousMessageTime" resultType="dto.MessageDTO">
+		SELECT num, sender, username, messageType,
+				levelAndGender, unk1, msg, sent, send_date,
+				message_del 
+		FROM messages
+		WHERE username = #{username} AND sender = #{sender} ORDER BY send_date DESC Limit 1
+	</select>
+	
+	<select id="previousMessageTimeSub" resultType="dto.MessageDTO">
+		SELECT num, sender, username, messageType,
+				levelAndGender, unk1, msg, sent, send_date,
+				message_del 
+		FROM messages
+		WHERE username = #{username} AND sender = #{sender} ORDER BY send_date DESC Limit 1
+	</select>
+	
+</mapper>
