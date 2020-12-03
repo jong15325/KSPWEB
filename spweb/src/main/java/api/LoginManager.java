@@ -11,7 +11,7 @@ import javax.servlet.http.HttpSessionBindingListener;
 import dto.UserLoginDTO;
 import service.UserService;
 
-/*
+/* https://goodmysky.tistory.com/5 참고
  * 20.3.15 equals를 equalsIgnoreCase로 변경*/
 public class LoginManager implements HttpSessionBindingListener{
 
@@ -39,13 +39,10 @@ public class LoginManager implements HttpSessionBindingListener{
 	}
 	
 	//세션 연결될 때 호출
-	//Hash에 접속자 저장함
+	//Hash테이블에 세션 저장
 	@Override
 	public void valueBound(HttpSessionBindingEvent event) {
-		// TODO Auto-generated method stub
 		loginUsers.put(event.getSession(), event.getName());
-		System.out.println(event.getName()+" 님이 로그인 하였습니다.");
-		System.out.println("현재 접속자 수 : "+ getUserCount());
 	}
 
 	@Override
