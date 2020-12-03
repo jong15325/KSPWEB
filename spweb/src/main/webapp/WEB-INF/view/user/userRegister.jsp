@@ -13,6 +13,30 @@
 <script type="text/javascript">
 
 	$(document).ready(function() {
+		//회원 가입 페이지 접속 시 세션에 카카오 아이디가 없다면 userLogin으로 리턴
+		var kakao_id = "${sessionScope.kakao.kakao_id}";
+		if(kakao_id == ""){
+			$.ajax({
+				success : function(){
+					swal({
+						text: "카카오 세션이 종료되었습니다. 다시 진행해주세요",
+						icon: "warning",
+						confirm : "OK",
+					}).then((willDelete) => {
+						location.href = "userLogin.do"
+					});
+				},
+				error : function(request, status, error){
+					swal({
+						text: "카카오 세션이 종료되었습니다. 다시 진행해주세요",
+						icon: "warning",
+						confirm : "OK",
+					}).then((willDelete) => {
+						location.href = "userLogin.do"
+					});
+				}
+			});
+		}
 		
 		var agreeValue = 0;
 		var nameCheckValue = 3;
@@ -61,7 +85,7 @@
 			var kakao_str = kakao_id.toString().slice(0,-1);
 			
 			var form_data = {
-					kakao_id : kakao_str,
+					kakao_id : 0,
 					usr_name : usr_name,
 					usr_pw : usr_pw,
 					usr_gender : usr_gender,
@@ -427,24 +451,21 @@
 
     <div class="middle-box text-center loginscreen animated fadeInDown">
         <div>
-            <div>
-                <h1 class="logo-name">SP</h1>
-            </div>
-            <h3>KSP</h3>
+            <h3>회원가입</h3>
             <p id="userRegisterCheckMessage" class="text-danger">&nbsp;</p>
             	<div class="form-group">
             		<div class="input-group">
-                		<input id="usr_name" type="text" class="form-control" name="usr_name" placeholder="게임 닉네임">
+                		<input id="usr_name" type="text" class="form-control" name="usr_name" placeholder="생성할 닉네임">
                   		<span class="input-group-append">
                   			<button id="usr_name_check" class="btn btn-primary" name="usr_name" style="background-color:#ed5565; border:2px solid #ed5565;">체크</button>
                   		</span>
                 	</div>
             	</div>
                 <div class="form-group">
-                    <input style="ime-mode:disabled;" id="usr_pw" type="password" class="form-control" name="usr_pw" placeholder="게임 비밀번호">
+                    <input style="ime-mode:disabled;" id="usr_pw" type="password" class="form-control" name="usr_pw" placeholder="생성할 비밀번호">
                 </div>
                 <div class="form-group">
-                    <input style="ime-mode:disabled;" id="re_usr_pw" type="password" class="form-control" name="re_usr_pw" placeholder="게임 비밀번호 확인">
+                    <input style="ime-mode:disabled;" id="re_usr_pw" type="password" class="form-control" name="re_usr_pw" placeholder="생성할 비밀번호 확인">
                 </div>
                 <div class="form-group">
 					<select id="usr_gender" name= "usr_gender" class="select2_demo_1 form-control select2-hidden-accessible" tabindex="-1" aria-hidden="true">

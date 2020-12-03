@@ -163,6 +163,8 @@ $(document).ready(function() {
 		}
 	});
 	
+	/* https://zero-gravity.tistory.com/245 참고 -> 후에 분석 후 페이지에 맞게 수정 예정*/
+	
 	var userInputId = getCookie("userInputId");//저장된 쿠기값 가져오기
     $("input[name='id']").val(userInputId); 
      
@@ -237,7 +239,7 @@ function registerCallFunction(){
 		if (willDelete) {
 			/* config에서 설정하게끔 수정해야함 */
 			var serverip = '121.143.130.115';
-			location.href="https://kauth.kakao.com/oauth/authorize?client_id=54956a942e84cb336582d1eb95702d4b&redirect_uri=http://"+serverip+"/oauth.do&response_type=code";
+			location.href="https://kauth.kakao.com/oauth/authorize?client_id=89a2eedb9149fcf10961b9b07f166dc9&redirect_uri=http://"+serverip+"/oauth.do&response_type=code";
 		}else{
 			swal({
 				text: "회원가입을 취소하였습니다",
@@ -280,12 +282,6 @@ function registerCallFunction(){
 								아이디 기억
 							</label>
 						</div>
-
-						<div>
-							<a href="#" class="txt1">
-								비밀번호 찾기
-							</a>
-						</div>
 					</div>
 			
 
@@ -300,13 +296,6 @@ function registerCallFunction(){
 					</div>
 
 					<div class="login100-form-social flex-c-m">
-						<a href="#" class="login100-form-social-item flex-c-m bg1 m-r-5">
-							<i class="fa fa-facebook-f" aria-hidden="true"></i>
-						</a>
-
-						<a href="#" class="login100-form-social-item flex-c-m bg2 m-r-5">
-							<i class="fa fa-twitter" aria-hidden="true"></i>
-						</a>
 					</div>
 				</div>
 			</div>

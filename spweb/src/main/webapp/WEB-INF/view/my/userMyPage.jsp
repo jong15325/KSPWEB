@@ -323,7 +323,7 @@ $('#replyFocus').bind('click', focusReply);
 		
 		function guestBookList(){
 			//var viewLastNum = lastNum; 제한 더보기
-			var viewLastNum = 0; // 전체 더보기
+			var viewLastNum = 0; // 마지막 댓글 번호
 			var viewLimitNum = limitNum;
 			var type_id = $("#like_usr_id").val();
 			var sessionUserId = $("#usr_name").val();
