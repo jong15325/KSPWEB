@@ -68,23 +68,25 @@ public class UserController {
 	@RequestMapping(value = "/userRegisterProcess.do", method = RequestMethod.POST)
 	public UserRegisterDTO userRegisterProcess(UserRegisterDTO userRegisterDto, HttpServletRequest request) {
 		System.out.println("회원 등록 프로세스 접근.");
-		System.out.println("getUsr_name : "+userRegisterDto.getUsr_name());
-		System.out.println("getKakao_id : "+userRegisterDto.getKakao_id());
-		System.out.println("getUsr_pw : "+userRegisterDto.getUsr_pw());
-		System.out.println("getGender : "+userRegisterDto.getUsr_gender());
-		System.out.println("getUsr_ip : "+userRegisterDto.getUsr_ip());
+		
+		//카카오 인증 아이디 체크
 		int checkKakao = service.kakaoCountCheckService(userRegisterDto.getKakao_id());
 		int checkUserName = service.userNameCountService(userRegisterDto.getUsr_name());
 		int registerFlag = 0;
+		
+		//테스트용 50 
 		if (checkKakao < 50) {
 			if(checkUserName < 1) {
-				System.out.println("가입성공");
 				registerFlag = 1;
+				
+				//클라이언트 IP 가져오기
 				String getUserIp = GetUserIPUtil.getRemoteAddr(request);
 				userRegisterDto.setUsr_ip(getUserIp);
+				
+				//정보 저장
 				service.userRegisterService(userRegisterDto);
 				int select_id = service.userSelectIdService(userRegisterDto.getUsr_name());
-				service.userRegisterEquipmentsService(select_id);	
+				service.userRegisterEquipmentsService(select_id);
 			}else {
 				System.out.println("이미 가입된 아이디");
 				registerFlag =3; // 이미 존재하는 이름
@@ -125,12 +127,21 @@ public class UserController {
 				userLoginDto.setLoginFlag(2); // 이미 접속중
 			}else {
 				System.out.println("로그인 가능");
+				
 				userLoginDto.setLoginFlag(1);
+				
+				//로그인한 유저 정보 담기
 				UserDTO userDto = service.userLoginService(userLoginDto.getUsr_name());
 				session.setAttribute("userInfoSession", userDto);
-				loginManager.setSession(session, userDto.getUsr_name());//세션관리에 저장
+				
+				//HashTable에 세션 저장
+				loginManager.setSession(session, userDto.getUsr_name());
 				System.out.println("접속한 사용자 이름 : "+loginManager.getUsr_name(session)); //접속 아이디 리턴
-				loginManager.printLoginUsers();//접속중인 아이디 출력
+				
+				//접속중인 세션 정보들 출력
+				loginManager.printLoginUsers();
+				
+				//길드 정보가 존재하는지 체크하여 길드 정보 셋팅
 				if(!userDto.getUsr_guildname().isEmpty()) {
 					GuildDTO guildDto = service.guildLoginSelectService(userDto.getUsr_guildname());
 					session.setAttribute("userGuildInfoSession", guildDto);
@@ -138,6 +149,7 @@ public class UserController {
 					guildManager.setSession(session, guildNUser);
 					guildManager.printGuildUsers();
 				}
+				
 				session.setAttribute("userLoginFlag", userLoginDto.getLoginFlag());
 			}
 		}else {
@@ -228,16 +240,15 @@ public class UserController {
 		System.out.println("kakaoCode = " + code);
 		// 1042695122 //똑같
 		// 1043218241 //1043218241
+		
+		//요청 code와 지정한 아이피로 카카오 서버에 엑세스 토큰을 요청하는듯
 		JsonNode node = Kakao_restTokenApi.getKakaoAccessToken(code, "121.143.130.115");
-
-		System.out.println("Node = " + node);
-
 		JsonNode accessToken = node.get("access_token");
-
 		session.setAttribute("access_token", accessToken);
-
+		//받은 엑세스 토큰을 헤더?에 담아서 카카오 유저 정보를 가져 오는 작업
 		JsonNode userInfo = Kakao_UserInfo.getKakaoUserInfo(accessToken);
 
+		//카카오 정보 수집 X
 		String id = userInfo.path("id").asText();
 		String usr_name = null;
 		String usr_email = null;
@@ -248,10 +259,6 @@ public class UserController {
 		
 		usr_name = properties.path("nickname").asText();
 		usr_email = kakao_account.path("email").asText();
-		
-		System.out.println("kakao_id : " + id);
-		System.out.println("kakao_nickname : " + usr_name);
-		System.out.println("kakao_email : " + usr_email);
 		
 		int transKakaoId = Integer.parseInt(id);
 		int checkKakao = service.kakaoCountCheckService(transKakaoId);
@@ -267,6 +274,6 @@ public class UserController {
 
 	}
 
-	// https://kauth.kakao.com/oauth/authorize?client_id=54956a942e84cb336582d1eb95702d4b&redirect_uri=http://121.141.136.218:8070/sp/oauth.do&response_type=code
+	// https://kauth.kakao.com/oauth/authorize?client_id=89a2eedb9149fcf10961b9b07f166dc9&redirect_uri=http://121.141.136.218:8070/sp/oauth.do&response_type=code
 
 }

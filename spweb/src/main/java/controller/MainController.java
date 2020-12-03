@@ -38,16 +38,21 @@ public class MainController {
 
 	}
 	
+	//메인 페이지 접근
 	@RequestMapping(value ="/index.do")
 	public ModelAndView mainPage(HttpSession session) {
 		System.out.println("메인 페이지 접근.");
 		ModelAndView mav = new ModelAndView();
+		//게시판글 담기
 		BoardDTO noticeDto = new BoardDTO();
 		BoardDTO eventDto = new BoardDTO();
 		BoardDTO updateDto = new BoardDTO();
+		//길드 랭킹 담기
 		GuildRankDTO guildRankDto = new GuildRankDTO();
+		//유저 랭킹 담기
 		UserRankDTO userRankDto = new UserRankDTO();
 		UserImgManager UIM  = new UserImgManager();
+		//로그인한 유저 세션 담기
 		UserDTO udto = (UserDTO) session.getAttribute("userInfoSession");
 		if(udto != null) {
 			UserDTO reUdto = service.mainUserInfoService(udto.getUsr_name());
@@ -65,12 +70,17 @@ public class MainController {
 			session.setAttribute("loginWellcome", 0);
 		}
 		
+		//유저 랭킹 리스트를 DB 조회 후 DTO에 담는다
 		List<UserRankDTO> aList = service.mainUserTopRankList(userRankDto);
 		for(UserRankDTO dto : aList) {
 			dto.setLevel_img_path(UIM.userLevelImg(dto.getUsr_level()));
 		}
+		
+		//길드 랭킹 뿌리기
 		mav.addObject("guildRank", service.mainGuildTopRankList(guildRankDto));
+		//유저 랭킹 뿌리기
 		mav.addObject("userRank", aList);
+		//게시판 뿌리기
 		mav.addObject("notice", service.mainNoticeBoardListService(noticeDto));
 		mav.addObject("event", service.mainEventBoardListService(eventDto));
 		mav.addObject("update", service.mainUpdateBoardListService(updateDto));
@@ -78,10 +88,12 @@ public class MainController {
 		return mav;
 	}
 	
+	//이미 접속중인지 세션 체크
 	@ResponseBody
 	@RequestMapping(value ="/alreadySessionCheckProcess.do" , method = RequestMethod.POST)
 	public int alreadySessionCheckProcess(String userSessionid, HttpSession session) {
 		int flag = 0;
+		//해쉬테이블에 담겨 있는 세션정보에서 접속한 아이디를 소문자로 변경하여 조회한다
 		boolean userIsLoginCheck = loginManager.loginIsUsing(userSessionid.toLowerCase());//이미 사용중인지 체크
 		if(userIsLoginCheck == true) {
 			flag = 1; // 이미 접속중

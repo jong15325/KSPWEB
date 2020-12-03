@@ -45,7 +45,7 @@ public class BoardUploadController {
 			String saveDirectory ="";
 			String subSaveDirectory = "";
 			
-			
+			//어떤 게시판 인지 - 게시판이 더 추가될 경우 switch로 변경 예정
 			if(boardCategory == 0) {
 				subSaveDirectory = "freeBoard";
 			}else if(boardCategory == 1) {
@@ -56,11 +56,13 @@ public class BoardUploadController {
 				subSaveDirectory = "updateBoard";
 			}
 			
+			//저장 경로 = root/upload/게시판종류
 			saveDirectory = mainSaveDirectory+ File.separator + subSaveDirectory + File.separator;
 			File fe = new File(saveDirectory);
 			if (!fe.exists())
 				fe.mkdir();
 			
+			//저장 경로 = root/upload/게시판종류/UUID_파일이름
 			File ff = new File(saveDirectory, random + "_" + fileName);
 			
 			try {

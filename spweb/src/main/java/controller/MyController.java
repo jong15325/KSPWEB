@@ -96,6 +96,7 @@ public class MyController {
 		UserNowEquipDTO epdto = new UserNowEquipDTO();
 		UserCardImgManager UCIM = new UserCardImgManager();
 		CardInfoManager cim = new CardInfoManager();
+		//유저 정보 및 추천 수 설정
 		UserDTO udto = service.myPageService(you_usr_name);
 		UserDTO like_udto = (UserDTO) session.getAttribute("userInfoSession");
 		mav.addObject("UserDTO", udto);
@@ -105,6 +106,8 @@ public class MyController {
 		map.put("like_usr_id", udto.getUsr_id());
 		map2.put("usr_id", udto.getUsr_id());
 		map2.put("itm_usr_id", udto.getUsr_id());
+		
+		//장착현황
 		emdto = service.myInfoNowEquipMagicService(map2);
 		ewdto = service.myInfoNowEquipWeaponService(map2);
 		eadto = service.myInfoNowEquipArmService(map2);
@@ -128,6 +131,8 @@ public class MyController {
 			epdto.setItm_img_path(UCIM.userPetCardImg(epdto.getItm_type()));
 			mav.addObject("UserNowEquipPet", epdto);
 		}
+		
+		//결과 뿌리기
 		mav.addObject("myHomeLike", service.myHomeLikeCheckService(map));
 		mav.addObject("myInfoLevelImg", UIM.userLevelImg(udto.getUsr_level()));
 		mav.addObject("myInfoCharImg", UIM.userMainCharacterImg(udto.getUsr_char()));
@@ -234,8 +239,11 @@ public class MyController {
 	public @ResponseBody List<GuestBookDTO> myHomeGuestBookList(GuestBookDTO gdto, int type_id, int viewLastNum, int viewLimitNum){
 		System.out.println("방명록 리스트 프로세스 접근");
 		HashMap<String, Object> map = new HashMap<String, Object>();
+		//현재까지 보여진 댓글 마지막 번호
 		map.put("startRow", viewLastNum);
+		//어떤 페이지의 방명록인지
 		map.put("type_id", type_id);
+		//방명록 갯수 확인
 		viewLimitNum = service.myHomeGuestBookCountService(map); // 전체가져오기
 		map.put("lastRow", viewLimitNum);
 		return service.myHomeGuestBookList2Service(map);
