@@ -1,6 +1,8 @@
 package api;
 
 import javax.servlet.http.HttpServletRequest;
+/*참고 : https://linked2ev.github.io/java/2019/05/22/JAVA-1.-java-get-clientIP/*/
+
 
 public class GetUserIPUtil {
 
