@@ -292,9 +292,6 @@
                                     <c:forEach items="${contentViewReply}" var="replyList">
                                     <div class="social-feed-box">
                                         <div class="social-avatar">
-                                            <a href="" class="float-left">
-                                                <img alt="image" src="img/a1.jpg">
-                                            </a>
                                             <div class="media-body">
                                                 <a href="javascript:void(0);">
                                                     ${replyList.reply_writer}
