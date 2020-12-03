@@ -26,7 +26,7 @@ public class Kakao_restTokenApi {
         final List<NameValuePair> postParams = new ArrayList<NameValuePair>();
  
         postParams.add(new BasicNameValuePair("grant_type", "authorization_code"));
-        postParams.add(new BasicNameValuePair("client_id", "54956a942e84cb336582d1eb95702d4b")); // REST API KEY
+        postParams.add(new BasicNameValuePair("client_id", "89a2eedb9149fcf10961b9b07f166dc9")); // REST API KEY
         postParams.add(new BasicNameValuePair("redirect_uri", "http://"+serverIp+"/oauth.do")); // 리다이렉트 URI
         postParams.add(new BasicNameValuePair("code", code)); // 로그인 과정중 얻은 code 값
  
