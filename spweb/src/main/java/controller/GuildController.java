@@ -253,9 +253,6 @@ public class GuildController {
 		HashMap<String, Object> map = new HashMap<String, Object>();
 		map.put("usr_id", usr_id);
 		map.put("guild_id", guild_id);
-		System.out.println("usr_id : " + usr_id);
-		System.out.println("guild_id : " + guild_id);
-		System.out.println("길드탈퇴 프로세스 접근");
 		int guildCheckFlag = service.guildCheckService(guild_id);
 		int successFlag = 0;
 		if (guildCheckFlag == 0) {
@@ -322,10 +319,14 @@ public class GuildController {
 						map.put("guild_name", guild_name);
 						map2.put("usr_id", usr_id);
 						map2.put("guild_name", guild_name);
+						//길드 멤버 테이블 insert
 						service.guildMemberInsertService(map);
+						//유저테이블에 길드 update
 						service.guildUserInsertService(map);
+						//기존 길드 및 유저 세션 삭제
 						session.removeAttribute("userInfoSession");
 						session.removeAttribute("userGuildInfoSession");
+						//길드 정보 담기
 						GuildDTO guildDto = service.guildJoinSelectService(guild_name);
 						session.setAttribute("userGuildInfoSession", guildDto);
 						String guildNuser = guild_name + "/" + usr_name;

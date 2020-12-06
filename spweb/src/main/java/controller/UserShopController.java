@@ -50,16 +50,18 @@ public class UserShopController {
 				}
 
 			}
-			System.out.println("currentPage : " + currentPage);
 			pdto = new UserShopPageDTO(currentPage, totalRecord);
-			System.out.println("총 페이지 수 : " + pdto.getTotalPage());
-			System.out.println("총 레코드 수 : " + pdto.getTotalCount());
-			System.out.println("시작 레코드 번호 : " + pdto.getStartRow());
-			System.out.println("끝 레코드 번호 : " + pdto.getEndRow());
-			System.out.println("시작 페이지 번호 : " + pdto.getStartPage());
-			System.out.println("끝 페이지 번호 : " + pdto.getEndPage());
 			mav.addObject("userShopPageDto", pdto);
 			mav.addObject("aList", service.userShopAllListService(pdto));
+			/*
+			 * System.out.println("currentPage : " + currentPage);
+			 * System.out.println("총 페이지 수 : " + pdto.getTotalPage());
+			 * System.out.println("총 레코드 수 : " + pdto.getTotalCount());
+			 * System.out.println("시작 레코드 번호 : " + pdto.getStartRow());
+			 * System.out.println("끝 레코드 번호 : " + pdto.getEndRow());
+			 * System.out.println("시작 페이지 번호 : " + pdto.getStartPage());
+			 * System.out.println("끝 페이지 번호 : " + pdto.getEndPage());
+			 */
 		}
 		mav.setViewName("/shop/userShopMain");
 		return mav;
@@ -92,9 +94,6 @@ public class UserShopController {
 			usdto.setBuy_usr_code(udto.getUsr_code());
 			usdto.setBuy_usr_name(udto.getUsr_name());
 			usdto.setBuy_usr_img_path(UIM.userLevelImg(udto.getUsr_level()));
-			System.out.println("스킬 : " + usdto.getCard_skill());
-			System.out.println("스킬1 : " + usdto.getCard_skill1());
-			System.out.println("스킬2 : " + usdto.getCard_skill2());
 		}else {
 			usdto = null;
 		}
