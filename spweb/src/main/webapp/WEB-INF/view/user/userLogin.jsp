@@ -262,6 +262,7 @@ function registerCallFunction(){
 					<span class="login100-form-title p-b-43">
 						LOGIN
 					</span>
+					ID : 관리자 / PW : 1234
 					<p id="userLoginCheckMessage" class="text-danger" style="text-align: center;">&nbsp;</p>
 					<div class="wrap-input100 validate-input" data-validate = "Valid email is required: ex@abc.xyz">
 						<input id="usr_name" class="input100" type="text" name="id">
