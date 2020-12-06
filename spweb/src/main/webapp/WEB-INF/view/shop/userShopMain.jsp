@@ -319,8 +319,9 @@
 		$.ajax({
 			method : "post",
 			dataType : "json",
-			url : "userShopExistenceCheck.do",
+			url : "userShopExistenceCheck.do", /* 해당 아이템 번호가 DB 상점에 실제로 존재하는지 체크하는 로직 호출 */
 			data : form_data1,
+			/* 성공 응답이 와야지 해당 아이템 정보 open */
 			success : function(data){
 				if(data == 1){
 					$("#myModal").empty();
@@ -338,12 +339,14 @@
 						url : "userShopCardDetailView.do",
 						data : form_data2,
 						success : function(data){
+							//카드 정보가 존재한다면
 							if(data.card_type_info != ""){
 								view_shop_id = data.shop_id;
 								var itm_gf = data.itm_trans_gf;
 								if(itm_gf < 1){
 									itm_gf = 0;
 								}
+								//카드 정보 템플릿 작성
 								$("#view_shop_id").val(data.shop_id);
 					     		$("#myModal").append("<div class='modal-content animated fadeInRight'></div>");
 								$(".modal-content").append("<div class='view_close_box'></div>");
