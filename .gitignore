@@ -64,3 +64,4 @@ spweb/SpringData/
 bin/
 build/
 dist/
+/spweb/target/
