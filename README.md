@@ -75,4 +75,5 @@ Controller → Service → DAO → MyBatis Mapper
   - Tomcat 8.5
 
 spweb/src/main/webapp/WEB-INF/config/db.properties - 데이터베이스 설정
+
 spweb/src/main/webapp/WEB-INF/config/kakao.properties - 카카오 API 키
