@@ -213,7 +213,7 @@
 	<bean id="uploadDirResource"
 		class="org.springframework.core.io.FileSystemResource">
 		<!-- <constructor-arg value="c:/temp"/> -->
-		<constructor-arg value="./src/main/webapp/files/" />
+		<constructor-arg value="D:/Java/KSPWEB/spweb/src/main/webapp/files" />
 	</bean>
 
 	<!-- 첨부파일을 임시기억저장소에 저장한다. -->
