@@ -1,0 +1,18 @@
+name: kspweb
+
+services:
+  local-mysql:
+    image: mysql:5.6
+    container_name: kspweb-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: jj102365
+      MYSQL_DATABASE: kspweb
+    ports:
+      - "3306:3306"
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+
+#platform: linux/arm64/v8   # Apple Silicon (M1/M2/M3)
+#platform: linux/amd64      # Intel/AMD 64bit
+#platform: linux/arm/v7     # ARM 32bit (라즈베리파이 등)
