@@ -70,9 +70,9 @@ Controller → Service → DAO → MyBatis Mapper
 
 🚀 설치 및 실행
   - JDK 1.6+
-  - Maven 3.x
-  - MySQL
-  - Tomcat
+  - Maven 4
+  - MySQL 5.6
+  - Tomcat 8.5
 
 spweb/src/main/webapp/WEB-INF/config/db.properties - 데이터베이스 설정
 spweb/src/main/webapp/WEB-INF/config/kakao.properties - 카카오 API 키
