@@ -1,0 +1,66 @@
+# Java 컴파일 파일
+*.class
+*.jar
+*.war
+*.ear
+
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+
+# Eclipse
+.classpath
+.project
+.settings/
+.springBeans
+*.launch
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# SVN (이미 Git으로 전환했으므로)
+.svn/
+
+# 로그 파일
+*.log
+logs/
+
+# 임시 파일
+*.tmp
+*.bak
+*.swp
+*~
+
+# OS 파일
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 업로드 파일 (필요시 주석 해제)
+# spweb/src/main/webapp/WEB-INF/upload/
+# spweb/src/main/webapp/files/
+
+# 설정 파일 (민감정보 포함 시)
+# spweb/src/main/webapp/WEB-INF/config/db.properties
+# spweb/src/main/webapp/WEB-INF/config/kakao.properties
+
+# Docker 볼륨 데이터 (필요시)
+# docker/mysql/data/
+
+# 기타 빌드 결과물
+spweb/SpringData/
+*.class
+bin/
+build/
+dist/
