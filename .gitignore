@@ -1,11 +1,17 @@
 # Java 컴파일 파일
 *.class
+
+# 패키지 파일
 *.jar
 *.war
 *.ear
+*.zip
+*.tar.gz
+*.rar
 
 # Maven
-target/
+**/target/
+**/m2e-wtp/
 pom.xml.tag
 pom.xml.releaseBackup
 pom.xml.versionsBackup
@@ -13,14 +19,16 @@ pom.xml.next
 release.properties
 dependency-reduced-pom.xml
 buildNumber.properties
-.mvn/timing.properties
+.mvn/
 
-# Eclipse
+# Eclipse 설정 파일
 .classpath
 .project
 .settings/
 .springBeans
 *.launch
+.metadata/
+.recommenders/
 
 # IntelliJ IDEA
 .idea/
@@ -29,7 +37,7 @@ buildNumber.properties
 *.ipr
 out/
 
-# SVN (이미 Git으로 전환했으므로)
+# SVN
 .svn/
 
 # 로그 파일
@@ -41,27 +49,40 @@ logs/
 *.bak
 *.swp
 *~
+*.orig
 
 # OS 파일
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
 desktop.ini
 
-# 업로드 파일 (필요시 주석 해제)
-# spweb/src/main/webapp/WEB-INF/upload/
-# spweb/src/main/webapp/files/
-
-# 설정 파일 (민감정보 포함 시)
-# spweb/src/main/webapp/WEB-INF/config/db.properties
-# spweb/src/main/webapp/WEB-INF/config/kakao.properties
-
-# Docker 볼륨 데이터 (필요시)
-# docker/mysql/data/
-
-# 기타 빌드 결과물
+# KSPWEB 프로젝트 특화
 spweb/SpringData/
-*.class
+spweb/target/
+spweb/.settings/
+spweb/.classpath
+spweb/.project
+
+# 업로드 파일
+spweb/src/main/webapp/WEB-INF/upload/
+spweb/src/main/webapp/files/
+spweb/src/main/webapp/file/
+
+# 설정 파일 (민감정보)
+spweb/src/main/webapp/WEB-INF/config/db.properties
+spweb/src/main/webapp/WEB-INF/config/kakao.properties
+
+# Docker
+docker-compose.yml
+.env
+
+# 기타
 bin/
 build/
 dist/
-/spweb/target/
+*.class
