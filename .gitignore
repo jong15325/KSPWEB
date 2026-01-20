@@ -87,3 +87,4 @@ build/
 dist/
 *.class
 /spweb/SpringData/
+/spweb/.settings/
